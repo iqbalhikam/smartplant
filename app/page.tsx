@@ -194,6 +194,7 @@ function DashboardContent() {
                     {/* Left Column (takes 2 cols on md+) */}
                     <div className="md:col-span-2 space-y-6 flex flex-col">
                       <SoilMoistureCard telemetry={telemetry} />
+                      <ThresholdSettings telemetry={telemetry} deviceId={config.deviceId} publishCommand={publishCommand} />
                       <AIAssistantCard telemetry={telemetry} />
                     </div>
 
@@ -208,10 +209,7 @@ function DashboardContent() {
               )}
             </main>
 
-            {/* Threshold configurations & FOOTER */}
-            {telemetry !== null && (
-              <ThresholdSettings telemetry={telemetry} deviceId={config.deviceId} />
-            )}
+            {/* FOOTER */}
 
             <footer className="mt-12 mb-4 text-center text-[10px] text-slate-600 font-semibold tracking-wider uppercase border-t border-slate-900/60 pt-6">
               SmartPlant Dashboard &copy; {new Date().getFullYear()} • IoT Solution for Smart Gardening

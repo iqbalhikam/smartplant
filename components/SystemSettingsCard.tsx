@@ -110,6 +110,17 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
   // Device version from MQTT telemetry
   const deviceVersion = telemetry.version ?? null;
 
+  // Auto-reset OTA state if the device version updates to the latest version
+  useEffect(() => {
+    if ((otaInstallStatus === "installing" || otaInstallStatus === "sent") && deviceVersion && latestVersion && deviceVersion === latestVersion) {
+      setOtaInstallStatus("idle");
+      toast.success("Update OTA Berhasil!", {
+        description: `Perangkat telah berhasil diperbarui ke versi ${latestVersion}.`
+      });
+      clearOtaLogs?.();
+    }
+  }, [deviceVersion, latestVersion, otaInstallStatus, clearOtaLogs]);
+
   // Determine whether an update is available
   const hasUpdate =
     githubFetched &&

@@ -1,34 +1,117 @@
-import React from "react";
-import { Sliders, Database, Key } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sliders, Database, Key, Save, Loader2 } from "lucide-react";
 import { SmartPlantData } from "../types";
+import { toast } from "sonner";
+
+const PRESETS = [
+  { name: "Sayuran", basah: 800, kering: 1500, icon: "🥬" },
+  { name: "Tanaman Hias", basah: 1200, kering: 2200, icon: "🌿" },
+  { name: "Kaktus", basah: 2000, kering: 3000, icon: "🌵" },
+];
 
 interface ThresholdSettingsProps {
   telemetry: SmartPlantData;
   deviceId: string;
+  publishCommand: (command: string) => void;
 }
 
-export default function ThresholdSettings({ telemetry, deviceId }: ThresholdSettingsProps) {
+export default function ThresholdSettings({ telemetry, deviceId, publishCommand }: ThresholdSettingsProps) {
+  const [localBasah, setLocalBasah] = useState<number>(telemetry.batasBasah);
+  const [localKering, setLocalKering] = useState<number>(telemetry.batasKering);
+  const [isSaving, setIsSaving] = useState(false);
+  const [sliderKey, setSliderKey] = useState(0);
+
+  useEffect(() => {
+    setLocalBasah(telemetry.batasBasah);
+    setLocalKering(telemetry.batasKering);
+    setSliderKey(prev => prev + 1);
+  }, [telemetry.batasBasah, telemetry.batasKering]);
+
+  const applyPreset = (basah: number, kering: number) => {
+    setLocalBasah(basah);
+    setLocalKering(kering);
+    setSliderKey(prev => prev + 1);
+  };
+
+  const hasChanges = localBasah !== telemetry.batasBasah || localKering !== telemetry.batasKering;
+
+  const publishRef = React.useRef(publishCommand);
+  publishRef.current = publishCommand;
+
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const timer = setTimeout(async () => {
+      setIsSaving(true);
+      
+      let sent = false;
+      if (localBasah !== telemetry.batasBasah) {
+        publishRef.current(`LIMIT:BASAH:${localBasah}`);
+        sent = true;
+      }
+      
+      if (localKering !== telemetry.batasKering) {
+        if (sent) await new Promise(r => setTimeout(r, 500));
+        publishRef.current(`LIMIT:KERING:${localKering}`);
+      }
+      
+      setIsSaving(false);
+      toast.success("Konfigurasi tersimpan otomatis!");
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [localBasah, localKering, telemetry.batasBasah, telemetry.batasKering, hasChanges]);
+
   return (
-    <section className="mt-8 p-6 bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-700/80 transition-all duration-300">
-      <div className="flex items-center gap-2.5 border-b border-slate-800/60 pb-3 mb-4">
-        <Sliders className="w-4 h-4 text-teal-400" />
-        <h3 className="font-bold text-slate-200 tracking-wide text-sm">Konfigurasi Batas Kelembapan (MQTT Param)</h3>
+    <section className="p-6 bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl hover:border-slate-700/80 transition-all duration-300">
+      <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4 h-[44px]">
+        <div className="flex items-center gap-2.5">
+          <Sliders className="w-4 h-4 text-teal-400" />
+          <h3 className="font-bold text-slate-200 tracking-wide text-sm">Konfigurasi Batas Kelembapan (MQTT Param)</h3>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-semibold">
+          {isSaving ? (
+            <span className="text-amber-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Auto-saving...</span>
+          ) : hasChanges ? (
+            <span className="text-slate-400">Menunggu...</span>
+          ) : (
+            <span className="text-teal-500 flex items-center gap-1"><Save className="w-3 h-3" /> Auto-save Aktif</span>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-6 flex flex-col md:flex-row md:items-center gap-3">
+        <span className="text-xs text-slate-400 font-medium">Template Preset:</span>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((preset, idx) => (
+            <button
+              key={idx}
+              onClick={() => applyPreset(preset.basah, preset.kering)}
+              className="px-4 py-1.5 bg-slate-950/50 hover:bg-teal-900/40 border border-slate-800 hover:border-teal-700/50 rounded-full text-xs font-semibold text-slate-300 hover:text-teal-300 transition-all flex items-center gap-2"
+            >
+              <span>{preset.icon}</span>
+              <span>{preset.name}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div className="flex justify-between text-xs">
             <span className="text-slate-400 font-medium">Batas Tanah Basah (Cukup Air)</span>
-            <span className="font-mono text-emerald-400 font-bold">{telemetry.batasBasah}</span>
+            <span className="font-mono text-emerald-400 font-bold">{localBasah}</span>
           </div>
           <div className="relative pt-1">
             <input
+              key={`basah-${sliderKey}`}
               type="range"
               min="0"
-              max="4095"
-              disabled
-              value={telemetry.batasBasah}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 opacity-60"
+              max={Math.max(0, localKering - 50)}
+              defaultValue={localBasah}
+              onChange={(e) => setLocalBasah(Number(e.target.value))}
+              style={{ touchAction: 'none' }}
+              className="w-full h-2 rounded-lg cursor-pointer accent-emerald-500 bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
               <span>0 (Sangat Basah)</span>
@@ -43,16 +126,18 @@ export default function ThresholdSettings({ telemetry, deviceId }: ThresholdSett
         <div className="space-y-4">
           <div className="flex justify-between text-xs">
             <span className="text-slate-400 font-medium">Batas Tanah Kering (Butuh Disiram)</span>
-            <span className="font-mono text-rose-400 font-bold">{telemetry.batasKering}</span>
+            <span className="font-mono text-rose-400 font-bold">{localKering}</span>
           </div>
           <div className="relative pt-1">
             <input
+              key={`kering-${sliderKey}`}
               type="range"
-              min="0"
+              min={Math.min(4095, localBasah + 50)}
               max="4095"
-              disabled
-              value={telemetry.batasKering}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500 opacity-60"
+              defaultValue={localKering}
+              onChange={(e) => setLocalKering(Number(e.target.value))}
+              style={{ touchAction: 'none' }}
+              className="w-full h-2 rounded-lg cursor-pointer accent-rose-500 bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
               <span>0 (Basah)</span>
@@ -65,16 +150,16 @@ export default function ThresholdSettings({ telemetry, deviceId }: ThresholdSett
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-slate-800/60 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-        <div className="flex items-center gap-2 text-slate-500 font-mono">
-          <Database className="w-3.5 h-3.5" />
-          <span>Topic Sub: </span>
-          <span className="text-slate-300 font-bold">"{deviceId}/telemetry"</span>
+      <div className="mt-6 pt-5 border-t border-slate-800/60 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/50 rounded-lg border border-slate-800/60 font-mono">
+          <Database className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="text-slate-500">Sub:</span>
+          <span className="text-slate-300 font-semibold">{deviceId}/telemetry</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-500 font-mono">
-          <Key className="w-3.5 h-3.5" />
-          <span>Topic Pub: </span>
-          <span className="text-slate-300 font-bold">"{deviceId}/cmd"</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/50 rounded-lg border border-slate-800/60 font-mono">
+          <Key className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-slate-500">Pub:</span>
+          <span className="text-slate-300 font-semibold">{deviceId}/cmd</span>
         </div>
       </div>
     </section>

@@ -175,24 +175,14 @@ export function useMQTT() {
           description: `Terhubung ke Device ID: ${targetConfig.deviceId}`,
         });
 
-        // Subscribe to telemetry topic
-        const subTopic = `${targetConfig.deviceId}/telemetry`;
-        client.subscribe(subTopic, { qos: 0 }, (err) => {
+        // Subscribe to wildcard to capture telemetry and any potential log topics
+        const wildcardTopic = `${targetConfig.deviceId}/#`;
+        client.subscribe(wildcardTopic, { qos: 0 }, (err) => {
           if (err) {
-            console.error("Subscription error:", err);
-            toast.error("Gagal berlangganan topik telemetri");
+            console.error("Wildcard subscription error:", err);
+            toast.error("Gagal berlangganan topik perangkat");
           } else {
-            console.log(`Subscribed to topic: ${subTopic}`);
-          }
-        });
-
-        // Subscribe to OTA log topic
-        const otaTopic = `${targetConfig.deviceId}/ota`;
-        client.subscribe(otaTopic, { qos: 0 }, (err) => {
-          if (err) {
-            console.error("OTA topic subscription error:", err);
-          } else {
-            console.log(`Subscribed to OTA log topic: ${otaTopic}`);
+            console.log(`Subscribed to wildcard topic: ${wildcardTopic}`);
           }
         });
       });
@@ -208,12 +198,12 @@ export function useMQTT() {
           } catch (err) {
             console.error("Failed to parse telemetry payload:", err);
           }
-        }
-
-        if (topic === `${targetConfig.deviceId}/ota`) {
+        } else if (topic !== `${targetConfig.deviceId}/cmd`) {
+          // Any other topic (e.g. /ota, /log, /status, /update) is treated as a log entry
+          const sub = topic.split('/').pop() || 'log';
           const timestamp = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-          const logEntry = `[${timestamp}] ${payload}`;
-          console.log("OTA Log:", logEntry);
+          const logEntry = `[${timestamp}] [${sub}] ${payload}`;
+          console.log("Captured Log:", logEntry);
           setOtaLogs(prev => [...prev, logEntry]);
         }
       });

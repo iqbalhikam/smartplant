@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
-  Droplet,
   Cpu,
   QrCode,
   Bluetooth,
@@ -11,17 +11,19 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import QRScanner from "./QRScanner";
 
 interface OnboardingScreenProps {
   deviceId: string;
   setDeviceId: (val: string) => void;
-  onConnect: () => void;
+  onConnect: (explicitId?: string, isNewDevice?: boolean) => void;
   onDemo: () => void;
   connectionStatus: string;
   mqttError: string | null;
   clearError: () => void;
+  savedDevices?: string[];
+  isVerifying?: boolean;
 }
 
 export default function OnboardingScreen({
@@ -31,7 +33,9 @@ export default function OnboardingScreen({
   onDemo,
   connectionStatus,
   mqttError,
-  clearError
+  clearError,
+  savedDevices = [],
+  isVerifying = false
 }: OnboardingScreenProps) {
   const [showScanner, setShowScanner] = useState(false);
   const [showWifiSetup, setShowWifiSetup] = useState(false);
@@ -112,7 +116,7 @@ export default function OnboardingScreen({
     }
 
     setBleLoading(true);
-    setBleStatusText("Mencari alat SmartPlant...");
+    setBleStatusText("Mencari alat SmartPlantCare...");
     setBleError(null);
     setSsidList([]);
 
@@ -121,7 +125,7 @@ export default function OnboardingScreen({
     const txCharUuid = "cba1d466-344c-4be3-ab3f-189f80dd7518";
 
     try {
-      toast.loading("Mencari alat SmartPlant...", { id: "ble-toast" });
+      toast.loading("Mencari alat SmartPlantCare...", { id: "ble-toast" });
       
       const device = await nav.bluetooth.requestDevice({
         filters: [
@@ -249,12 +253,12 @@ export default function OnboardingScreen({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!deviceId.trim()) return;
-    onConnect();
+    onConnect(deviceId, true);
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans selection:bg-teal-500 selection:text-black p-4">
-      <Toaster theme="dark" position="top-center" richColors closeButton />
+    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center font-sans selection:bg-teal-500 selection:text-black p-4">
+      {/* Toaster removed from here as it is now in layout.tsx */}
       
       {/* Background Glowing Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -265,13 +269,13 @@ export default function OnboardingScreen({
       <div className="max-w-md w-full z-10">
         {/* Brand / Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="p-3.5 bg-linier-to-tr from-teal-500 to-emerald-400 rounded-2xl shadow-xl shadow-teal-500/20 mb-3 animate-pulse">
-            <Droplet className="w-10 h-10 text-slate-950 stroke-[2.5]" />
+          <div className="relative w-20 h-20 bg-white/5 p-2 rounded-2xl shadow-xl shadow-teal-500/20 mb-3 animate-pulse">
+            <Image src="/image/LOGO.png" alt="SmartPlantCare Logo" fill sizes="80px" priority className="object-contain p-1" />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-linier-to-r from-teal-200 via-emerald-200 to-indigo-100 bg-clip-text text-transparent">
-            SmartPlant
+          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-r from-teal-500 via-emerald-500 to-indigo-500 dark:from-teal-200 dark:via-emerald-200 dark:to-indigo-100 bg-clip-text text-transparent">
+            SmartPlantCare
           </h1>
-          <p className="text-xs text-slate-400 font-semibold tracking-wider mt-1 uppercase">IoT Irrigation System</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold tracking-wider mt-1 uppercase">IoT Irrigation System</p>
         </div>
 
         {/* Dynamic Card Navigation */}
@@ -283,11 +287,11 @@ export default function OnboardingScreen({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl relative"
+              className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl relative"
             >
-              <h2 className="text-lg font-bold text-slate-200 mb-2">Device Onboarding</h2>
-              <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                Silakan masukkan Device ID alat SmartPlant Anda untuk mulai memonitor kelembapan secara real-time.
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Device Onboarding</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                Silakan masukkan Device ID alat SmartPlantCare Anda untuk mulai memonitor kelembapan secara real-time.
               </p>
 
               {/* MQTT Connection Error */}
@@ -312,9 +316,46 @@ export default function OnboardingScreen({
                 </div>
               )}
 
+              {/* Saved Devices Section */}
+              {savedDevices && savedDevices.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-3 uppercase">
+                    Perangkat Tersimpan
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {savedDevices.map((devId) => (
+                      <button
+                        key={devId}
+                        onClick={() => {
+                          clearError();
+                          setDeviceId(devId);
+                          onConnect(devId, false);
+                        }}
+                        disabled={connectionStatus === "connecting" || connectionStatus === "verifying"}
+                        className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl transition-all text-left cursor-pointer active:scale-95 disabled:opacity-50"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center shrink-0">
+                          <Cpu className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{devId}</p>
+                          <p className="text-[10px] text-slate-500 truncate">Ketuk untuk masuk</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center my-6">
+                    <div className="flex-1 border-t border-slate-200 dark:border-slate-800/40" />
+                    <span className="px-3 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Atau Tambah Baru</span>
+                    <div className="flex-1 border-t border-slate-200 dark:border-slate-800/40" />
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 tracking-wider mb-2 uppercase">
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-2 uppercase">
                     Device ID (ID Perangkat)
                   </label>
                   <div className="relative">
@@ -327,7 +368,7 @@ export default function OnboardingScreen({
                         clearError();
                       }}
                       placeholder="Contoh: PLANT-751080"
-                      className="w-full bg-slate-950/80 border border-slate-800 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 rounded-xl pl-10 pr-12 py-3.5 text-sm text-slate-200 font-mono tracking-wide placeholder-slate-700 transition-all duration-300"
+                      className="w-full bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30 rounded-xl pl-10 pr-12 py-3.5 text-sm text-slate-800 dark:text-slate-200 font-mono tracking-wide placeholder-slate-400 dark:placeholder-slate-700 transition-all duration-300"
                     />
                     <div className="absolute left-3.5 top-4 text-slate-500">
                       <Cpu className="w-4.5 h-4.5" />
@@ -338,7 +379,7 @@ export default function OnboardingScreen({
                         clearError();
                         setShowScanner(true);
                       }}
-                      className="absolute right-2.5 top-2.5 p-2 bg-slate-800 hover:bg-slate-700 text-teal-400 hover:text-teal-300 border border-slate-700/60 rounded-lg transition-colors cursor-pointer"
+                      className="absolute right-2.5 top-2.5 p-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 border border-slate-300 dark:border-slate-700/60 rounded-lg transition-colors cursor-pointer"
                       title="Scan QR Code"
                     >
                       <QrCode className="w-4 h-4" />
@@ -348,13 +389,13 @@ export default function OnboardingScreen({
 
                 <button
                   type="submit"
-                  disabled={connectionStatus === "connecting" || !deviceId.trim()}
-                  className="w-full bg-linier-to-r from-teal-500 to-emerald-400 text-slate-950 hover:brightness-110 active:scale-95 disabled:opacity-50 py-3.5 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={connectionStatus === "connecting" || connectionStatus === "verifying" || !deviceId.trim()}
+                  className="w-full bg-linear-to-r from-teal-500 to-emerald-400 text-slate-950 hover:brightness-110 active:scale-95 disabled:opacity-50 py-3.5 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {connectionStatus === "connecting" ? (
+                  {connectionStatus === "connecting" || connectionStatus === "verifying" ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      MENGHUBUNGKAN...
+                      {isVerifying ? "MEMVERIFIKASI..." : "MENGHUBUNGKAN..."}
                     </>
                   ) : (
                     "HUBUNGKAN ALAT"
@@ -366,24 +407,24 @@ export default function OnboardingScreen({
               <div className="mt-5 text-center">
                 <button
                   onClick={() => setShowWifiSetup(true)}
-                  className="text-xs font-bold text-slate-400 hover:text-teal-400 transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                  className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                 >
-                  <Wifi className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+                  <Wifi className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 animate-pulse" />
                   Alat belum terhubung ke WiFi? Setup WiFi Baru
                 </button>
               </div>
 
               {/* Divider */}
               <div className="flex items-center my-6">
-                <div className="flex-1 border-t border-slate-800/40" />
-                <span className="px-3 text-[9px] text-slate-500 font-bold uppercase tracking-wider">Atau</span>
-                <div className="flex-1 border-t border-slate-800/40" />
+                <div className="flex-1 border-t border-slate-200 dark:border-slate-800/40" />
+                <span className="px-3 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Atau</span>
+                <div className="flex-1 border-t border-slate-200 dark:border-slate-800/40" />
               </div>
 
               {/* Demo Button */}
               <button
                 onClick={onDemo}
-                className="w-full bg-slate-950/40 hover:bg-slate-900 border border-slate-800 text-indigo-400 hover:text-indigo-300 py-3 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 active:scale-95 cursor-pointer"
+                className="w-full bg-slate-100 dark:bg-slate-950/40 hover:bg-slate-200 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 py-3 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 active:scale-95 cursor-pointer"
               >
                 Mulai dengan Simulator Demo
               </button>
@@ -395,22 +436,22 @@ export default function OnboardingScreen({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl relative"
+              className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 shadow-2xl relative"
             >
-              <div className="flex items-center gap-2.5 mb-2 border-b border-slate-800/60 pb-3">
+              <div className="flex items-center gap-2.5 mb-2 border-b border-slate-200 dark:border-slate-800/60 pb-3">
                 <button
                   onClick={() => {
                     resetBleProvisioning();
                     setShowWifiSetup(false);
                   }}
-                  className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition active:scale-90 cursor-pointer"
+                  className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-lg transition active:scale-90 cursor-pointer"
                   title="Kembali"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-200">Setup WiFi Alat</h2>
-                  <p className="text-[10px] text-slate-400">Konfigurasi WiFi ESP32 via Bluetooth (WebBLE)</p>
+                  <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Setup WiFi Alat</h2>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Konfigurasi WiFi ESP32 via Bluetooth (WebBLE)</p>
                 </div>
               </div>
 
@@ -446,14 +487,14 @@ export default function OnboardingScreen({
                     exit={{ opacity: 0, y: -10 }}
                     className="space-y-4 mt-4"
                   >
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Hubungkan ESP32 Anda ke WiFi lokal melalui Bluetooth. Klik tombol di bawah ini untuk mencari dan men-scan jaringan WiFi di sekitar perangkat ESP32 Anda.
                     </p>
                     <button
                       type="button"
                       disabled={!isBleSupported}
                       onClick={handleBleScan}
-                      className="w-full bg-linier-to-r from-indigo-500 to-purple-500 text-white hover:brightness-110 active:scale-95 disabled:opacity-50 py-3.5 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-linear-to-r from-indigo-500 to-purple-500 text-white hover:brightness-110 active:scale-95 disabled:opacity-50 py-3.5 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Bluetooth className="w-4 h-4 animate-pulse" />
                       MULAI CARI WIFI VIA BLUETOOTH
@@ -470,8 +511,8 @@ export default function OnboardingScreen({
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="py-8 flex flex-col items-center justify-center gap-3 mt-4"
                   >
-                    <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-                    <p className="text-xs text-slate-300 font-semibold animate-pulse">{bleStatusText}</p>
+                    <Loader2 className="w-8 h-8 text-indigo-500 dark:text-indigo-400 animate-spin" />
+                    <p className="text-xs text-slate-500 dark:text-slate-300 font-semibold animate-pulse">{bleStatusText}</p>
                   </motion.div>
                 )}
 
@@ -486,7 +527,7 @@ export default function OnboardingScreen({
                   >
                     <form onSubmit={handleBleSendCredentials} className="space-y-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 tracking-wider mb-2 uppercase">
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-2 uppercase">
                           Pilih Jaringan WiFi (SSID)
                         </label>
                         <div className="relative">
@@ -497,10 +538,10 @@ export default function OnboardingScreen({
                               setWifiSsid(e.target.value);
                               setBleError(null);
                             }}
-                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-xl pl-10 pr-10 py-3 text-xs text-slate-200 transition-all duration-300 disabled:opacity-50 appearance-none cursor-pointer"
+                            className="w-full bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-xl pl-10 pr-10 py-3 text-xs text-slate-800 dark:text-slate-200 transition-all duration-300 disabled:opacity-50 appearance-none cursor-pointer"
                           >
                             {ssidList.map((ssid, index) => (
-                              <option key={index} value={ssid} className="bg-slate-950 text-slate-200">
+                              <option key={index} value={ssid} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">
                                 {ssid}
                               </option>
                             ))}
@@ -515,7 +556,7 @@ export default function OnboardingScreen({
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 tracking-wider mb-2 uppercase">
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wider mb-2 uppercase">
                           Password WiFi
                         </label>
                         <div className="relative">
@@ -528,7 +569,7 @@ export default function OnboardingScreen({
                               setBleError(null);
                             }}
                             placeholder="Masukkan password WiFi Anda"
-                            className="w-full bg-slate-950/80 border border-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-xl pl-10 pr-4 py-3 text-xs text-slate-200 placeholder-slate-700 transition-all duration-300 disabled:opacity-50"
+                            className="w-full bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 rounded-xl pl-10 pr-4 py-3 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-700 transition-all duration-300 disabled:opacity-50"
                           />
                           <div className="absolute left-3.5 top-3.5 text-slate-500">
                             <Lock className="w-4 h-4" />
@@ -541,7 +582,7 @@ export default function OnboardingScreen({
                           type="button"
                           disabled={bleLoading}
                           onClick={resetBleProvisioning}
-                          className="flex-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-200 rounded-xl text-xs font-bold py-3 transition duration-300 cursor-pointer active:scale-95"
+                          className="flex-1 bg-slate-200 dark:bg-slate-850 hover:bg-slate-300 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold py-3 transition duration-300 cursor-pointer active:scale-95"
                         >
                           BATAL
                         </button>
@@ -549,7 +590,7 @@ export default function OnboardingScreen({
                         <button
                           type="submit"
                           disabled={bleLoading || !wifiSsid}
-                          className="flex-2 bg-linier-to-r from-indigo-500 to-purple-500 text-white hover:brightness-110 active:scale-95 disabled:opacity-50 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                          className="flex-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white hover:brightness-110 active:scale-95 disabled:opacity-50 rounded-xl text-xs font-black tracking-widest transition-all duration-300 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 cursor-pointer"
                         >
                           {bleLoading ? (
                             <>

@@ -63,17 +63,17 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
   }, [localBasah, localKering, telemetry.batasBasah, telemetry.batasKering, hasChanges]);
 
   return (
-    <section className="p-6 bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl hover:border-slate-700/80 transition-all duration-300">
-      <div className="flex items-center justify-between border-b border-slate-800/60 pb-3 mb-4 h-[44px]">
+    <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 pb-3 mb-4 h-[44px]">
         <div className="flex items-center gap-2.5">
-          <Sliders className="w-4 h-4 text-teal-400" />
-          <h3 className="font-bold text-slate-200 tracking-wide text-sm">Konfigurasi Batas Kelembapan (MQTT Param)</h3>
+          <Sliders className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+          <h3 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Konfigurasi Batas Kelembapan (MQTT Param)</h3>
         </div>
         <div className="flex items-center gap-2 text-xs font-semibold">
           {isSaving ? (
-            <span className="text-amber-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Auto-saving...</span>
+            <span className="text-amber-500 dark:text-amber-400 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Auto-saving...</span>
           ) : hasChanges ? (
-            <span className="text-slate-400">Menunggu...</span>
+            <span className="text-slate-500 dark:text-slate-400">Menunggu...</span>
           ) : (
             <span className="text-teal-500 flex items-center gap-1"><Save className="w-3 h-3" /> Auto-save Aktif</span>
           )}
@@ -81,13 +81,13 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
       </div>
 
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-3">
-        <span className="text-xs text-slate-400 font-medium">Template Preset:</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Template Preset:</span>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((preset, idx) => (
             <button
               key={idx}
               onClick={() => applyPreset(preset.basah, preset.kering)}
-              className="px-4 py-1.5 bg-slate-950/50 hover:bg-teal-900/40 border border-slate-800 hover:border-teal-700/50 rounded-full text-xs font-semibold text-slate-300 hover:text-teal-300 transition-all flex items-center gap-2"
+              className="px-4 py-1.5 bg-slate-100 dark:bg-slate-950/50 hover:bg-teal-50 dark:hover:bg-teal-900/40 border border-slate-200 dark:border-slate-800 hover:border-teal-300 dark:hover:border-teal-700/50 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-300 transition-all flex items-center gap-2"
             >
               <span>{preset.icon}</span>
               <span>{preset.name}</span>
@@ -99,8 +99,8 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div className="flex justify-between text-xs">
-            <span className="text-slate-400 font-medium">Batas Tanah Basah (Cukup Air)</span>
-            <span className="font-mono text-emerald-400 font-bold">{localBasah}</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Batas Tanah Basah (Cukup Air)</span>
+            <span className="font-mono text-emerald-500 dark:text-emerald-400 font-bold">{localBasah}</span>
           </div>
           <div className="relative pt-1">
             <input
@@ -111,7 +111,7 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
               defaultValue={localBasah}
               onChange={(e) => setLocalBasah(Number(e.target.value))}
               style={{ touchAction: 'none' }}
-              className="w-full h-2 rounded-lg cursor-pointer accent-emerald-500 bg-slate-800"
+              className="w-full h-2 rounded-lg cursor-pointer accent-emerald-500 bg-slate-200 dark:bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
               <span>0 (Sangat Basah)</span>
@@ -125,8 +125,8 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
 
         <div className="space-y-4">
           <div className="flex justify-between text-xs">
-            <span className="text-slate-400 font-medium">Batas Tanah Kering (Butuh Disiram)</span>
-            <span className="font-mono text-rose-400 font-bold">{localKering}</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Batas Tanah Kering (Butuh Disiram)</span>
+            <span className="font-mono text-rose-500 dark:text-rose-400 font-bold">{localKering}</span>
           </div>
           <div className="relative pt-1">
             <input
@@ -137,7 +137,7 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
               defaultValue={localKering}
               onChange={(e) => setLocalKering(Number(e.target.value))}
               style={{ touchAction: 'none' }}
-              className="w-full h-2 rounded-lg cursor-pointer accent-rose-500 bg-slate-800"
+              className="w-full h-2 rounded-lg cursor-pointer accent-rose-500 bg-slate-200 dark:bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
               <span>0 (Basah)</span>
@@ -150,16 +150,16 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
         </div>
       </div>
 
-      <div className="mt-6 pt-5 border-t border-slate-800/60 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/50 rounded-lg border border-slate-800/60 font-mono">
-          <Database className="w-3.5 h-3.5 text-indigo-400" />
+      <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800/60 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-950/50 rounded-lg border border-slate-200 dark:border-slate-800/60 font-mono">
+          <Database className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
           <span className="text-slate-500">Sub:</span>
-          <span className="text-slate-300 font-semibold">{deviceId}/telemetry</span>
+          <span className="text-slate-700 dark:text-slate-300 font-semibold">{deviceId}/telemetry</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-950/50 rounded-lg border border-slate-800/60 font-mono">
-          <Key className="w-3.5 h-3.5 text-amber-400" />
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-950/50 rounded-lg border border-slate-200 dark:border-slate-800/60 font-mono">
+          <Key className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
           <span className="text-slate-500">Pub:</span>
-          <span className="text-slate-300 font-semibold">{deviceId}/cmd</span>
+          <span className="text-slate-700 dark:text-slate-300 font-semibold">{deviceId}/cmd</span>
         </div>
       </div>
     </section>

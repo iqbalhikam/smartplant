@@ -76,17 +76,17 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
   return (
     <motion.div
       variants={itemVariants}
-      className={`bg-slate-900/40 border backdrop-blur-xl rounded-2xl p-6 shadow-2xl transition-all duration-500 flex flex-col justify-between ${soilMetrics.glowClass} ${soilMetrics.bgGlow}`}
+      className={`bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl transition-all duration-500 flex flex-col justify-between ${soilMetrics.glowClass} ${soilMetrics.bgGlow}`}
     >
       {/* Card Title & Badges */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-slate-950/80 border border-slate-800 rounded-xl">
-            <Droplet className="w-5 h-5 text-teal-400" />
+          <div className="p-2 bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl">
+            <Droplet className="w-5 h-5 text-teal-500 dark:text-teal-400" />
           </div>
           <div>
-            <h2 className="font-bold text-slate-200 tracking-wide text-sm">Kelembapan Tanah</h2>
-            <p className="text-[10px] text-slate-400">Status kadar air dalam tanah</p>
+            <h2 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Kelembapan Tanah</h2>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">Status kadar air dalam tanah</p>
           </div>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wider ${soilMetrics.badgeBg} shadow-sm animate-pulse`}>
@@ -129,25 +129,25 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
 
           {/* Percentage text in the center */}
           <div className="absolute bottom-1.5 left-0 right-0 text-center flex flex-col items-center">
-            <span className="text-4xl font-extrabold tracking-tight bg-linear-to-b from-white to-slate-200 bg-clip-text text-transparent">
+            <span className="text-4xl font-extrabold tracking-tight bg-linear-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
               {soilMetrics.percentage}%
             </span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Kelembapan</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-0.5">Kelembapan</span>
           </div>
         </div>
       </div>
 
       {/* Subtitle & Info */}
-      <p className="text-xs text-slate-400 text-center px-4 mb-4 font-medium italic">
+      <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4 mb-4 font-medium italic">
         "{soilMetrics.desc}"
       </p>
 
       {/* Bottom info bar */}
-      <div className="flex justify-between items-center mt-4 text-xs font-mono text-slate-400 bg-slate-950/20 px-3 py-2 rounded-xl border border-slate-800/40">
+      <div className="flex justify-between items-center mt-4 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-950/20 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/40">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-500 uppercase">Nilai Sensor:</span>
-          <span className="text-slate-200 font-bold">{telemetry.tanah}</span>
-          <span className="text-[10px] text-slate-600">/ 4095</span>
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase">Nilai Sensor:</span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold">{telemetry.tanah}</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-600">/ 4095</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">

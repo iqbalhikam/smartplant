@@ -1,9 +1,10 @@
-import React from "react";
-import { Droplet, Wifi, WifiOff, Loader2, LogOut } from "lucide-react";
+import Image from "next/image";
+import { Wifi, WifiOff, Loader2, LogOut } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface DashboardHeaderProps {
   isDemoMode: boolean;
-  connectionStatus: "disconnected" | "connecting" | "connected" | "error";
+  connectionStatus: "disconnected" | "connecting" | "connected" | "error" | "verifying";
   deviceId: string;
   onDisconnect: () => void;
 }
@@ -15,16 +16,16 @@ export default function DashboardHeader({
   onDisconnect
 }: DashboardHeaderProps) {
   return (
-    <header className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 border-b border-slate-900 pb-6">
+    <header className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 border-b border-slate-200 dark:border-slate-900 pb-6">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-linier-to-tr from-teal-500 to-emerald-400 rounded-xl shadow-lg shadow-teal-500/20">
-          <Droplet className="w-8 h-8 text-slate-950 stroke-[2.5]" />
+        <div className="relative w-14 h-14 rounded-xl overflow-hidden shadow-lg shadow-teal-500/10 dark:shadow-teal-500/20 bg-white dark:bg-white/5 p-1 border border-slate-200 dark:border-transparent">
+          <Image src="/image/LOGO.png" alt="SmartPlantCare Logo" fill sizes="56px" priority className="object-contain" />
         </div>
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-linier-to-r from-teal-200 via-emerald-200 to-indigo-100 bg-clip-text text-transparent">
-            SmartPlant Dashboard
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-linear-to-r from-teal-600 via-emerald-600 to-indigo-600 dark:from-teal-200 dark:via-emerald-200 dark:to-indigo-100 bg-clip-text text-transparent">
+            SmartPlantCare Dashboard
           </h1>
-          <p className="text-xs text-slate-400 font-medium">Monitoring & Kontrol Penyiram Tanaman Cerdas</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Monitoring & Kontrol Penyiram Tanaman Cerdas</p>
         </div>
       </div>
 
@@ -42,7 +43,7 @@ export default function DashboardHeader({
           <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
             connectionStatus === "connected"
               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-              : connectionStatus === "connecting"
+              : (connectionStatus === "connecting" || connectionStatus === "verifying")
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                 : "bg-rose-500/10 text-rose-400 border-rose-500/20"
           }`}>
@@ -51,10 +52,10 @@ export default function DashboardHeader({
                 <Wifi className="w-3.5 h-3.5" />
                 ONLINE
               </>
-            ) : connectionStatus === "connecting" ? (
+            ) : (connectionStatus === "connecting" || connectionStatus === "verifying") ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                CONNECTING
+                {connectionStatus === "verifying" ? "VERIFYING" : "CONNECTING"}
               </>
             ) : (
               <>
@@ -64,6 +65,9 @@ export default function DashboardHeader({
             )}
           </span>
         )}
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* Disconnect Button */}
         <button

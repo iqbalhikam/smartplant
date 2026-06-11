@@ -28,16 +28,30 @@ export function useMQTT() {
   const [isConnected, setIsConnected] = useState(false);
   const [loadingStorage, setLoadingStorage] = useState(true);
   const [telemetry, setTelemetry] = useState<SmartPlantData | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connecting" | "connected" | "error">("disconnected");
+  const [connectionStatus, setConnectionStatus] = useState<"disconnected" | "connecting" | "connected" | "error" | "verifying">("disconnected");
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [mqttError, setMqttError] = useState<string | null>(null);
   const [otaLogs, setOtaLogs] = useState<string[]>([]);
+  const [savedDevices, setSavedDevices] = useState<string[]>([]);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const clientRef = useRef<any>(null);
+  const verificationTimeoutRef = useRef<any>(null);
+  const dashboardOfflineTimeoutRef = useRef<any>(null);
 
   // Load config from localStorage on mount
   useEffect(() => {
-    const savedDeviceId = localStorage.getItem("smartplant_device_id");
+    const savedDeviceId = localStorage.getItem("smartplant_active_device") || localStorage.getItem("smartplant_device_id");
+    const storedDevicesStr = localStorage.getItem("smartplant_saved_devices");
+    let storedDevices: string[] = [];
+    if (storedDevicesStr) {
+      try { storedDevices = JSON.parse(storedDevicesStr); } catch (e) {}
+    } else if (savedDeviceId) {
+      storedDevices = [savedDeviceId];
+      localStorage.setItem("smartplant_saved_devices", JSON.stringify(storedDevices));
+    }
+    setSavedDevices(storedDevices);
+
     if (savedDeviceId) {
       const activeConfig = {
         brokerUrl: MQTT_BROKER_URL,
@@ -48,21 +62,13 @@ export function useMQTT() {
       setConfig(activeConfig);
       setIsConnected(true);
       setIsDemoMode(false);
-      connectMQTT(activeConfig);
+      connectMQTT(activeConfig, false);
     }
     setLoadingStorage(false);
   }, []);
 
-  // Save device ID to localStorage when successfully connected
-  useEffect(() => {
-    if (connectionStatus === "connected" && config.deviceId) {
-      localStorage.setItem("smartplant_device_id", config.deviceId);
-      setIsConnected(true);
-    }
-  }, [connectionStatus, config.deviceId]);
-
   // Connect helper from onboarding
-  const handleConnect = (explicitId?: string) => {
+  const handleConnect = (explicitId?: string, isNewDevice: boolean = false) => {
     const targetId = explicitId || deviceIdInput;
     if (!targetId.trim()) return;
     const activeConfig = {
@@ -72,7 +78,12 @@ export function useMQTT() {
       password: MQTT_PASSWORD,
     };
     setConfig(activeConfig);
-    connectMQTT(activeConfig);
+    setIsVerifying(isNewDevice);
+    if (!isNewDevice) {
+      setIsConnected(true);
+      localStorage.setItem("smartplant_active_device", targetId.trim());
+    }
+    connectMQTT(activeConfig, isNewDevice);
   };
 
   // Demo mode launcher
@@ -85,14 +96,15 @@ export function useMQTT() {
   // Disconnect handler
   const handleDisconnect = () => {
     disconnectMQTT();
-    localStorage.removeItem("smartplant_device_id");
+    localStorage.removeItem("smartplant_active_device");
     setIsConnected(false);
     setDeviceIdInput("");
     setIsDemoMode(false);
+    setIsVerifying(false);
   };
 
   // Connect to MQTT Broker
-  const connectMQTT = async (targetConfig: MQTTConfig) => {
+  const connectMQTT = async (targetConfig: MQTTConfig, isVerification: boolean = false) => {
     setIsDemoMode(false);
     setConnectionStatus("connecting");
     setMqttError(null);
@@ -169,11 +181,14 @@ export function useMQTT() {
       clientRef.current = client;
 
       client.on("connect", () => {
-        setConnectionStatus("connected");
+        setConnectionStatus(isVerification ? "verifying" : "connected");
         console.log("MQTT Client Connected!");
-        toast.success("Koneksi Berhasil", {
-          description: `Terhubung ke Device ID: ${targetConfig.deviceId}`,
-        });
+        
+        if (!isVerification) {
+          toast.success("Koneksi Berhasil", {
+            description: `Terhubung ke Device ID: ${targetConfig.deviceId}`,
+          });
+        }
 
         // Subscribe to wildcard to capture telemetry and any potential log topics
         const wildcardTopic = `${targetConfig.deviceId}/#`;
@@ -185,6 +200,25 @@ export function useMQTT() {
             console.log(`Subscribed to wildcard topic: ${wildcardTopic}`);
           }
         });
+
+        if (isVerification) {
+          toast.loading("Memverifikasi perangkat...", { id: "verify-toast" });
+          verificationTimeoutRef.current = setTimeout(() => {
+            // Timeout hit, no telemetry received
+            client.end();
+            setConnectionStatus("disconnected");
+            setIsVerifying(false);
+            setMqttError("Perangkat tidak ditemukan atau belum mengirimkan data. Pastikan perangkat aktif.");
+            toast.error("Verifikasi Gagal", { id: "verify-toast" });
+          }, 8000);
+        } else {
+          // If not verifying, we are entering dashboard. Set a timeout to mark as offline if no telemetry.
+          dashboardOfflineTimeoutRef.current = setTimeout(() => {
+            setConnectionStatus("error");
+            setMqttError("Perangkat tidak mengirimkan data (Offline).");
+            toast.error("Perangkat Offline");
+          }, 15000);
+        }
       });
 
       client.on("message", (topic, message) => {
@@ -195,6 +229,24 @@ export function useMQTT() {
             const data = JSON.parse(payload) as SmartPlantData;
             console.log("MQTT Telemetry Received (cahaya):", data.cahaya, "Full Data:", data);
             setTelemetry(data);
+            
+            if (dashboardOfflineTimeoutRef.current) {
+              clearTimeout(dashboardOfflineTimeoutRef.current);
+            }
+
+            if (isVerification) {
+              if (verificationTimeoutRef.current) clearTimeout(verificationTimeoutRef.current);
+              toast.success("Perangkat Terverifikasi", { id: "verify-toast", description: `Terhubung ke Device ID: ${targetConfig.deviceId}` });
+              setConnectionStatus("connected");
+              setIsVerifying(false);
+              setIsConnected(true);
+              localStorage.setItem("smartplant_active_device", targetConfig.deviceId);
+              setSavedDevices(prev => {
+                const newList = prev.includes(targetConfig.deviceId) ? prev : [...prev, targetConfig.deviceId];
+                localStorage.setItem("smartplant_saved_devices", JSON.stringify(newList));
+                return newList;
+              });
+            }
           } catch (err) {
             console.error("Failed to parse telemetry payload:", err);
           }
@@ -250,6 +302,12 @@ export function useMQTT() {
       clientRef.current.end();
       clientRef.current = null;
     }
+    if (verificationTimeoutRef.current) {
+      clearTimeout(verificationTimeoutRef.current);
+    }
+    if (dashboardOfflineTimeoutRef.current) {
+      clearTimeout(dashboardOfflineTimeoutRef.current);
+    }
     setConnectionStatus("disconnected");
     setTelemetry(null);
     toast.info("Koneksi MQTT terputus");
@@ -273,7 +331,6 @@ export function useMQTT() {
         }
         return updated;
       });
-      toast.success(`Simulator: Perintah "${command}" disimulasikan`);
       return;
     }
 
@@ -283,10 +340,6 @@ export function useMQTT() {
         if (err) {
           console.error("Failed to publish command:", err);
           toast.error(`Gagal mengirim perintah: "${command}"`);
-        } else {
-          toast.success(`Berhasil mengirim perintah: "${command}"`, {
-            description: `Topik: ${topic}`,
-          });
         }
       });
     }
@@ -360,6 +413,8 @@ export function useMQTT() {
     handleConnect,
     handleEnterDemo,
     handleDisconnect,
-    publishCommand
+    publishCommand,
+    savedDevices,
+    isVerifying
   };
 }

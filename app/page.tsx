@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMQTT } from "../hooks/useMQTT";
 import OnboardingScreen from "../components/OnboardingScreen";
@@ -42,7 +42,9 @@ function DashboardContent() {
     handleConnect,
     handleEnterDemo,
     handleDisconnect,
-    publishCommand
+    publishCommand,
+    savedDevices,
+    isVerifying
   } = useMQTT();
 
   const searchParams = useSearchParams();
@@ -63,10 +65,10 @@ function DashboardContent() {
 
   if (loadingStorage) {
     return (
-      <div className="relative min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-10 h-10 text-teal-400 animate-spin" />
-          <p className="text-sm text-slate-400 font-medium animate-pulse">Memuat konfigurasi...</p>
+          <Loader2 className="w-10 h-10 text-teal-500 dark:text-teal-400 animate-spin" />
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat konfigurasi...</p>
         </div>
       </div>
     );
@@ -91,6 +93,8 @@ function DashboardContent() {
             connectionStatus={connectionStatus}
             mqttError={mqttError}
             clearError={() => setMqttError(null)}
+            savedDevices={savedDevices}
+            isVerifying={isVerifying}
           />
         </motion.div>
       ) : (
@@ -100,7 +104,7 @@ function DashboardContent() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="relative min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-black w-full"
+          className="relative min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-black w-full"
         >
           {/* Background Glowing Blobs Container */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -125,57 +129,72 @@ function DashboardContent() {
                 /* SKELETON LOADING UI */
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Skeleton Soil Card */}
-                  <div className="md:col-span-2 bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl flex flex-col justify-between h-[360px]">
+                  <div className="md:col-span-2 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl flex flex-col justify-between h-[360px]">
                     <div className="flex items-center justify-between">
-                      <div className="h-4 w-36 bg-slate-800 rounded-md animate-pulse" />
-                      <div className="h-6 w-24 bg-slate-800 rounded-full animate-pulse" />
+                      <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
+                      <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
                     </div>
                     <div className="flex flex-col items-center justify-center flex-1 my-4">
-                      <div className="w-48 h-24 border-t-8 border-x-8 border-slate-800 rounded-t-full animate-pulse flex items-end justify-center">
-                        <div className="h-6 w-16 bg-slate-800 rounded mb-2 animate-pulse" />
+                      <div className="w-48 h-24 border-t-8 border-x-8 border-slate-200 dark:border-slate-800 rounded-t-full animate-pulse flex items-end justify-center">
+                        <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded mb-2 animate-pulse" />
                       </div>
-                      <div className="h-4 w-28 bg-slate-800 rounded mt-4 animate-pulse" />
+                      <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded mt-4 animate-pulse" />
                     </div>
-                    <div className="flex justify-between items-center border-t border-slate-800/60 pt-4">
-                      <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
-                      <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+                    <div className="flex justify-between items-center border-t border-slate-200 dark:border-slate-800/60 pt-4">
+                      <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                      <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
                     </div>
                   </div>
 
                   {/* Skeleton Light and Control Cards */}
                   <div className="space-y-6 flex flex-col">
-                    <div className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl h-[170px] flex flex-col justify-between">
-                      <div className="h-4 w-28 bg-slate-800 rounded-md animate-pulse" />
+                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl h-[170px] flex flex-col justify-between">
+                      <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-slate-800 rounded-full animate-pulse" />
+                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
                         <div className="space-y-2">
-                          <div className="h-5 w-20 bg-slate-800 rounded animate-pulse" />
-                          <div className="h-3.5 w-16 bg-slate-800 rounded animate-pulse" />
+                          <div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                          <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between min-h-[166px]">
-                      <div className="h-4 w-32 bg-slate-800 rounded-md animate-pulse" />
+                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl flex-1 flex flex-col justify-between min-h-[166px]">
+                      <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse" />
                       <div className="space-y-3 mt-4">
-                        <div className="h-8 w-full bg-slate-800 rounded-lg animate-pulse" />
+                        <div className="h-8 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="h-9 bg-slate-800 rounded-lg animate-pulse" />
-                          <div className="h-9 bg-slate-800 rounded-lg animate-pulse" />
+                          <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+                          <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Loading message */}
+                  {/* Loading / Offline message */}
                   <div className="md:col-span-3 text-center py-6">
-                    <Loader2 className="w-8 h-8 text-teal-400 animate-spin mx-auto mb-3" />
-                    <p className="text-slate-400 text-sm">
-                      Menunggu payload telemetry pertama dari topik <span className="font-mono text-teal-300">"{config.deviceId}/telemetry"</span>...
-                    </p>
+                    {connectionStatus === "disconnected" || connectionStatus === "error" ? (
+                      <>
+                        <div className="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <AlertTriangle className="w-6 h-6 text-rose-500 dark:text-rose-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Perangkat Offline</h3>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
+                          Tidak dapat terhubung ke perangkat <span className="font-mono text-teal-600 dark:text-teal-400 font-bold">{config.deviceId}</span>. 
+                          Pastikan perangkat menyala dan terhubung ke internet.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <Loader2 className="w-8 h-8 text-teal-500 dark:text-teal-400 animate-spin mx-auto mb-3" />
+                        <p className="text-slate-600 dark:text-slate-400 text-sm">
+                          Menunggu payload telemetry pertama dari topik <span className="font-mono text-teal-600 dark:text-teal-300">"{config.deviceId}/telemetry"</span>...
+                        </p>
+                      </>
+                    )}
                     <button
                       onClick={handleEnterDemo}
-                      className="mt-3 text-xs text-indigo-400 hover:text-indigo-300 underline font-semibold transition cursor-pointer"
+                      className="mt-4 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 underline font-semibold transition cursor-pointer"
                     >
                       Aktifkan Simulator Demo untuk Memulai Instant
                     </button>
@@ -211,8 +230,8 @@ function DashboardContent() {
 
             {/* FOOTER */}
 
-            <footer className="mt-12 mb-4 text-center text-[10px] text-slate-600 font-semibold tracking-wider uppercase border-t border-slate-900/60 pt-6">
-              SmartPlant Dashboard &copy; {new Date().getFullYear()} • IoT Solution for Smart Gardening
+            <footer className="mt-12 mb-4 text-center text-[10px] text-slate-500 dark:text-slate-600 font-semibold tracking-wider uppercase border-t border-slate-200 dark:border-slate-900/60 pt-6">
+              SmartPlantCare Dashboard &copy; {new Date().getFullYear()} • IoT Solution for Smart Gardening
             </footer>
 
           </div>
@@ -222,13 +241,13 @@ function DashboardContent() {
   );
 }
 
-export default function SmartPlantDashboard() {
+export default function SmartPlantCareDashboard() {
   return (
     <Suspense fallback={
-      <div className="relative min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center font-sans">
+      <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-10 h-10 text-teal-400 animate-spin" />
-          <p className="text-sm text-slate-400 font-medium animate-pulse">Memuat dashboard...</p>
+          <Loader2 className="w-10 h-10 text-teal-500 dark:text-teal-400 animate-spin" />
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat dashboard...</p>
         </div>
       </div>
     }>

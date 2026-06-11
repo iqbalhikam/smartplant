@@ -52,7 +52,7 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
         <div className={`p-2 shrink-0 ${iconBg} rounded-xl ${isComingSoon ? "grayscale" : ""}`}>{icon}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5 xl:gap-2">
-            <p className="text-xs font-bold text-slate-200 truncate">{label}</p>
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{label}</p>
             {isComingSoon && (
               <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider bg-violet-500/15 border border-violet-500/30 text-violet-400 whitespace-nowrap">
                 Segera Hadir
@@ -69,8 +69,8 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
         disabled={isComingSoon}
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
           isComingSoon
-            ? "bg-slate-800 cursor-not-allowed"
-            : `cursor-pointer ${enabled ? accentColor : "bg-slate-700"}`
+            ? "bg-slate-200 dark:bg-slate-800 cursor-not-allowed"
+            : `cursor-pointer ${enabled ? accentColor : "bg-slate-300 dark:bg-slate-700"}`
         }`}
         aria-label={`Toggle ${label}`}
         title={isComingSoon ? "Fitur ini belum tersedia" : undefined}
@@ -78,7 +78,7 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
         <span
           className={`pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${
             isComingSoon
-              ? "translate-x-0 bg-slate-600"
+              ? "translate-x-0 bg-slate-400 dark:bg-slate-600"
               : `bg-white ${enabled ? "translate-x-5" : "translate-x-0"}`
           }`}
         />
@@ -205,16 +205,16 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
   return (
     <motion.div
       variants={itemVariants}
-      className="bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-700/80 transition-all duration-300 overflow-hidden"
+      className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center gap-2.5 px-6 pt-5 pb-4 border-b border-slate-800/60">
+      <div className="flex items-center gap-2.5 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800/60">
         <div className="p-2 bg-teal-500/10 border border-teal-500/20 rounded-xl">
-          <Settings className="w-4 h-4 text-teal-400" />
+          <Settings className="w-4 h-4 text-teal-500 dark:text-teal-400" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-200 tracking-wide text-sm">Pengaturan Sistem</h3>
-          <p className="text-[10px] text-slate-400">Konfigurasi modul perangkat keras IoT</p>
+          <h3 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Pengaturan Sistem</h3>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">Konfigurasi modul perangkat keras IoT</p>
         </div>
       </div>
 
@@ -244,19 +244,19 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
       </div>
 
       {/* OTA Update Section */}
-      <div className="mx-6 mb-5 p-4 bg-slate-950/40 border border-slate-800/60 rounded-xl space-y-3">
+      <div className="mx-6 mb-5 p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 rounded-xl space-y-3">
         {/* OTA Section header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-violet-400" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <Zap className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Pembaruan Firmware (OTA)
             </span>
           </div>
           <button
             onClick={() => { setOtaInstallStatus("idle"); fetchLatestRelease(); }}
             disabled={!githubFetched}
-            className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             title="Cek ulang pembaruan"
           >
             <RefreshCw className={`w-3 h-3 ${!githubFetched ? "animate-spin" : ""}`} />
@@ -264,15 +264,15 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
         </div>
 
         {/* Version row */}
-        <div className="flex items-center justify-between gap-2 bg-slate-900/60 border border-slate-800/40 rounded-xl px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/40 rounded-xl px-3 py-2.5">
           <div className="flex items-center gap-2 shrink-0">
             <Cpu className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">Versi Alat:</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Versi Alat:</span>
           </div>
           <span className={`font-mono text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md truncate ${
             deviceVersion
-              ? "text-teal-400 bg-teal-500/10"
-              : "text-slate-500 bg-slate-800/60 animate-pulse"
+              ? "text-teal-600 dark:text-teal-400 bg-teal-500/10"
+              : "text-slate-500 bg-slate-200 dark:bg-slate-800/60 animate-pulse"
           }`}>
             {deviceVersion ?? "Mendeteksi..."}
           </span>
@@ -329,7 +329,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               </div>
               <button
                 onClick={handleInstallClick}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linier-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-violet-500/15 active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-violet-500/15 active:scale-95 cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Install Update Sekarang
@@ -355,13 +355,13 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               <div className="flex gap-2">
                 <button
                   onClick={handleInstallCancel}
-                  className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95"
+                  className="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleInstallClick}
-                  className="flex-1 py-2 bg-linier-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
+                  className="flex-1 py-2 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
                 >
                   Ya, Install Sekarang!
                 </button>
@@ -405,9 +405,9 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               </div>
 
               {/* Terminal log panel */}
-              <div className="bg-slate-950 border border-slate-800/80 rounded-xl overflow-hidden">
+              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden">
                 {/* Title bar */}
-                <div className="flex items-center gap-1.5 px-3 py-2 border-b border-slate-800/60 bg-slate-900/60">
+                <div className="flex items-center gap-1.5 px-3 py-2 border-b border-slate-200 dark:border-slate-800/60 bg-slate-100 dark:bg-slate-900/60">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />

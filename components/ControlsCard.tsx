@@ -2,6 +2,7 @@ import React from "react";
 import { Cpu, Power, Lightbulb, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartPlantData } from "../types";
+import { toast } from "sonner";
 
 interface ControlsCardProps {
   telemetry: SmartPlantData;
@@ -40,6 +41,7 @@ export default function ControlsCard({ telemetry, publishCommand }: ControlsCard
           onClick={() => {
             const newMode = telemetry.mode === "AUTO" ? "MANUAL" : "AUTO";
             publishCommand(`MODE:${newMode}`);
+            toast.success(`Mode AI berhasil diubah ke ${newMode}`);
           }}
           className={`relative w-28 h-9 rounded-xl font-bold text-xs tracking-wider transition-all duration-300 border flex items-center justify-between px-3 ${
             telemetry.mode === "AUTO"

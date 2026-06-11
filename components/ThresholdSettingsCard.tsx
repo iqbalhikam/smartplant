@@ -9,13 +9,13 @@ const PRESETS = [
   { name: "Kaktus", basah: 2000, kering: 3000, icon: "🌵" },
 ];
 
-interface ThresholdSettingsProps {
+interface ThresholdSettingsCardProps {
   telemetry: SmartPlantData;
   deviceId: string;
   publishCommand: (command: string) => void;
 }
 
-export default function ThresholdSettings({ telemetry, deviceId, publishCommand }: ThresholdSettingsProps) {
+export default function ThresholdSettingsCard({ telemetry, deviceId, publishCommand }: ThresholdSettingsCardProps) {
   const [localBasah, setLocalBasah] = useState<number>(telemetry.batasBasah);
   const [localKering, setLocalKering] = useState<number>(telemetry.batasKering);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,25 +48,28 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
       if (localBasah !== telemetry.batasBasah) {
         publishRef.current(`LIMIT:BASAH:${localBasah}`);
         sent = true;
+        toast.success("Batas basah berhasil diperbarui");
       }
       
       if (localKering !== telemetry.batasKering) {
         if (sent) await new Promise(r => setTimeout(r, 500));
         publishRef.current(`LIMIT:KERING:${localKering}`);
+        toast.success("Batas kering berhasil diperbarui");
       }
       
       setIsSaving(false);
-      toast.success("Konfigurasi tersimpan otomatis!");
     }, 1000);
 
     return () => clearTimeout(timer);
   }, [localBasah, localKering, telemetry.batasBasah, telemetry.batasKering, hasChanges]);
 
   return (
-    <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
+    <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 pb-3 mb-4 h-[44px]">
         <div className="flex items-center gap-2.5">
-          <Sliders className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+          <div className="p-1.5 bg-teal-500/10 rounded-lg border border-teal-500/20">
+            <Sliders className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+          </div>
           <h3 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Konfigurasi Batas Kelembapan (MQTT Param)</h3>
         </div>
         <div className="flex items-center gap-2 text-xs font-semibold">
@@ -87,7 +90,7 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
             <button
               key={idx}
               onClick={() => applyPreset(preset.basah, preset.kering)}
-              className="px-4 py-1.5 bg-slate-100 dark:bg-slate-950/50 hover:bg-teal-50 dark:hover:bg-teal-900/40 border border-slate-200 dark:border-slate-800 hover:border-teal-300 dark:hover:border-teal-700/50 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-300 transition-all flex items-center gap-2"
+              className="px-4 py-1.5 bg-slate-100 dark:bg-slate-950/50 hover:bg-teal-50 dark:hover:bg-teal-900/40 border border-slate-200 dark:border-slate-800 hover:border-teal-300 dark:hover:border-teal-700/50 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-300 transition-all flex items-center gap-2 cursor-pointer"
             >
               <span>{preset.icon}</span>
               <span>{preset.name}</span>
@@ -118,8 +121,8 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
               <span>4095 (Kering)</span>
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 italic mt-1">
-            * Sistem menyetop penyiraman saat sensor membaca kelembapan melampaui level basah ini.
+          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
+            * Batas Basah menentukan kapan tanah dianggap cukup lembap sehingga penyiraman dihentikan.
           </p>
         </div>
 
@@ -144,8 +147,8 @@ export default function ThresholdSettings({ telemetry, deviceId, publishCommand 
               <span>4095 (Sangat Kering)</span>
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 italic mt-1">
-            * Sistem otomatis memicu pompa menyala saat sensor membaca kelembapan menyusut melewati level kering ini.
+          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
+            * Batas Kering mengatur seberapa kering tanah sebelum AI memutuskan untuk menyiram.
           </p>
         </div>
       </div>

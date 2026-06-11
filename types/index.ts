@@ -4,9 +4,12 @@ export interface SmartPlantData {
   pompa: number;          // 0: OFF, 1: ON
   lampu: number;          // 0: OFF, 1: ON
   mode: "AUTO" | "MANUAL";
-  batasKering: number;    // Nilai batas tanah butuh disiram
-  batasBasah: number;     // Nilai batas tanah sudah cukup air
-  version?: string;       // Versi firmware ESP32 (contoh: "v1.0.0")
+  batasKering: number;
+  batasBasah: number;
+  air?: number;           // Level air. Jika -1, berarti sensor fisik tidak dipasang/dinonaktifkan.
+  suhu?: number;          // Suhu Celcius. Jika -1, berarti sensor fisik dinonaktifkan.
+  version?: string;
+  rule?: string;          // Kode Fuzzy Logic yang memicu tindakan
 }
 
 export interface MQTTConfig {

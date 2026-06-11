@@ -90,8 +90,8 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
 type OtaInstallStatus = "idle" | "confirming" | "installing" | "sent";
 
 export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs = [], clearOtaLogs }: SystemSettingsCardProps) {
-  const [waterTankEnabled, setWaterTankEnabled] = useState(true);
-  const [tempSensorEnabled, setTempSensorEnabled] = useState(true);
+  const [waterTankEnabled, setWaterTankEnabled] = useState(false);
+  const [tempSensorEnabled, setTempSensorEnabled] = useState(false);
 
   // GitHub release state
   const [latestVersion, setLatestVersion] = useState<string>("");
@@ -173,12 +173,22 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
     const next = !waterTankEnabled;
     setWaterTankEnabled(next);
     publishCommand(`CONFIG:WATER:${next ? "ON" : "OFF"}`);
+    if (next) {
+      toast.success("Modul level air berhasil diaktifkan");
+    } else {
+      toast.success("Modul level air berhasil dinonaktifkan");
+    }
   };
 
   const handleTempToggle = () => {
     const next = !tempSensorEnabled;
     setTempSensorEnabled(next);
     publishCommand(`CONFIG:SUHU:${next ? "ON" : "OFF"}`);
+    if (next) {
+      toast.success("Modul suhu berhasil diaktifkan");
+    } else {
+      toast.success("Modul suhu berhasil dinonaktifkan");
+    }
   };
 
   // OTA install handlers
@@ -228,7 +238,6 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
           enabled={waterTankEnabled}
           accentColor="bg-sky-500"
           onToggle={handleWaterToggle}
-          isComingSoon
         />
 
         <ToggleRow
@@ -239,7 +248,6 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
           enabled={tempSensorEnabled}
           accentColor="bg-orange-500"
           onToggle={handleTempToggle}
-          isComingSoon
         />
       </div>
 

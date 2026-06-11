@@ -11,7 +11,10 @@ import SoilMoistureCard from "../components/SoilMoistureCard";
 import LightSensorCard from "../components/LightSensorCard";
 import ControlsCard from "../components/ControlsCard";
 import AIAssistantCard from "../components/AIAssistantCard";
-import ThresholdSettings from "../components/ThresholdSettings";
+import ThresholdSettingsCard from "../components/ThresholdSettingsCard";
+import AIFuzzyStatusCard from "../components/AIFuzzyStatusCard";
+import TemperatureCard from "../components/TemperatureCard";
+import WaterLevelCard from "../components/WaterLevelCard";
 import SystemSettingsCard from "../components/SystemSettingsCard";
 
 const containerVariants = {
@@ -213,8 +216,18 @@ function DashboardContent() {
                     {/* Left Column (takes 2 cols on md+) */}
                     <div className="md:col-span-2 space-y-6 flex flex-col">
                       <SoilMoistureCard telemetry={telemetry} />
-                      <ThresholdSettings telemetry={telemetry} deviceId={config.deviceId} publishCommand={publishCommand} />
-                      <AIAssistantCard telemetry={telemetry} />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <TemperatureCard telemetry={telemetry} />
+                        <WaterLevelCard telemetry={telemetry} />
+                      </div>
+
+                      <ThresholdSettingsCard telemetry={telemetry} deviceId={config.deviceId} publishCommand={publishCommand} />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <AIAssistantCard telemetry={telemetry} />
+                        <AIFuzzyStatusCard telemetry={telemetry} />
+                      </div>
                     </div>
 
                     {/* Right Column (takes 1 col on md+) */}

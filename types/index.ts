@@ -6,6 +6,8 @@ export interface SmartPlantData {
   mode: "AUTO" | "MANUAL";
   batasKering: number;
   batasBasah: number;
+  calKering: number;      // Nilai kalibrasi batas kering dari ESP32
+  calBasah: number;       // Nilai kalibrasi batas basah dari ESP32
   air?: number;           // Level air. Jika -1, berarti sensor fisik tidak dipasang/dinonaktifkan.
   suhu?: number;          // Suhu Celcius. Jika -1, berarti sensor fisik dinonaktifkan.
   version?: string;

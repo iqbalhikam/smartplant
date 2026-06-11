@@ -3,12 +3,6 @@ import { Sliders, Database, Key, Save, Loader2 } from "lucide-react";
 import { SmartPlantData } from "../types";
 import { toast } from "sonner";
 
-const PRESETS = [
-  { name: "Sayuran", basah: 800, kering: 1500, icon: "🥬" },
-  { name: "Tanaman Hias", basah: 1200, kering: 2200, icon: "🌿" },
-  { name: "Kaktus", basah: 2000, kering: 3000, icon: "🌵" },
-];
-
 interface ThresholdSettingsCardProps {
   telemetry: SmartPlantData;
   deviceId: string;
@@ -16,16 +10,30 @@ interface ThresholdSettingsCardProps {
 }
 
 export default function ThresholdSettingsCard({ telemetry, deviceId, publishCommand }: ThresholdSettingsCardProps) {
-  const [localBasah, setLocalBasah] = useState<number>(telemetry.batasBasah);
-  const [localKering, setLocalKering] = useState<number>(telemetry.batasKering);
+  const [localBasah, setLocalBasah] = useState<number>(telemetry?.batasBasah ?? 0);
+  const [localKering, setLocalKering] = useState<number>(telemetry?.batasKering ?? 4095);
   const [isSaving, setIsSaving] = useState(false);
   const [sliderKey, setSliderKey] = useState(0);
 
+  const calBasah = telemetry?.calBasah ?? 0;
+  const calKering = telemetry?.calKering ?? 4095;
+
+  const getDynamicPresets = () => {
+    const range = calKering - calBasah;
+    return [
+      { name: "Sayuran", basah: Math.round(calBasah + range * 0.20), kering: Math.round(calBasah + range * 0.37), icon: "🥬" },
+      { name: "Tanaman Hias", basah: Math.round(calBasah + range * 0.29), kering: Math.round(calBasah + range * 0.54), icon: "🌿" },
+      { name: "Kaktus", basah: Math.round(calBasah + range * 0.49), kering: Math.round(calBasah + range * 0.73), icon: "🌵" },
+    ];
+  };
+
+  const dynamicPresets = getDynamicPresets();
+
   useEffect(() => {
-    setLocalBasah(telemetry.batasBasah);
-    setLocalKering(telemetry.batasKering);
+    setLocalBasah(telemetry?.batasBasah ?? 0);
+    setLocalKering(telemetry?.batasKering ?? 4095);
     setSliderKey(prev => prev + 1);
-  }, [telemetry.batasBasah, telemetry.batasKering]);
+  }, [telemetry?.batasBasah, telemetry?.batasKering]);
 
   const applyPreset = (basah: number, kering: number) => {
     setLocalBasah(basah);
@@ -33,7 +41,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
     setSliderKey(prev => prev + 1);
   };
 
-  const hasChanges = localBasah !== telemetry.batasBasah || localKering !== telemetry.batasKering;
+  const hasChanges = localBasah !== (telemetry?.batasBasah ?? 0) || localKering !== (telemetry?.batasKering ?? 4095);
 
   const publishRef = React.useRef(publishCommand);
   publishRef.current = publishCommand;
@@ -45,13 +53,13 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
       setIsSaving(true);
       
       let sent = false;
-      if (localBasah !== telemetry.batasBasah) {
+      if (localBasah !== (telemetry?.batasBasah ?? 0)) {
         publishRef.current(`LIMIT:BASAH:${localBasah}`);
         sent = true;
         toast.success("Batas basah berhasil diperbarui");
       }
       
-      if (localKering !== telemetry.batasKering) {
+      if (localKering !== (telemetry?.batasKering ?? 4095)) {
         if (sent) await new Promise(r => setTimeout(r, 500));
         publishRef.current(`LIMIT:KERING:${localKering}`);
         toast.success("Batas kering berhasil diperbarui");
@@ -61,7 +69,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [localBasah, localKering, telemetry.batasBasah, telemetry.batasKering, hasChanges]);
+  }, [localBasah, localKering, telemetry?.batasBasah, telemetry?.batasKering, hasChanges]);
 
   return (
     <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
@@ -86,7 +94,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-3">
         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Template Preset:</span>
         <div className="flex flex-wrap gap-2">
-          {PRESETS.map((preset, idx) => (
+          {dynamicPresets.map((preset, idx) => (
             <button
               key={idx}
               onClick={() => applyPreset(preset.basah, preset.kering)}
@@ -109,16 +117,16 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
             <input
               key={`basah-${sliderKey}`}
               type="range"
-              min="0"
-              max={Math.max(0, localKering - 50)}
+              min={telemetry?.calBasah ?? 0}
+              max={telemetry?.calKering ?? 4095}
               defaultValue={localBasah}
               onChange={(e) => setLocalBasah(Number(e.target.value))}
               style={{ touchAction: 'none' }}
               className="w-full h-2 rounded-lg cursor-pointer accent-emerald-500 bg-slate-200 dark:bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
-              <span>0 (Sangat Basah)</span>
-              <span>4095 (Kering)</span>
+              <span>{telemetry?.calBasah ?? 0} (Basah)</span>
+              <span>{telemetry?.calKering ?? 4095} (Kering)</span>
             </div>
           </div>
           <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
@@ -135,16 +143,16 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
             <input
               key={`kering-${sliderKey}`}
               type="range"
-              min={Math.min(4095, localBasah + 50)}
-              max="4095"
+              min={telemetry?.calBasah ?? 0}
+              max={telemetry?.calKering ?? 4095}
               defaultValue={localKering}
               onChange={(e) => setLocalKering(Number(e.target.value))}
               style={{ touchAction: 'none' }}
               className="w-full h-2 rounded-lg cursor-pointer accent-rose-500 bg-slate-200 dark:bg-slate-800"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
-              <span>0 (Basah)</span>
-              <span>4095 (Sangat Kering)</span>
+              <span>{telemetry?.calBasah ?? 0} (Basah)</span>
+              <span>{telemetry?.calKering ?? 4095} (Sangat Kering)</span>
             </div>
           </div>
           <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">

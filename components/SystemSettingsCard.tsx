@@ -12,10 +12,12 @@ import {
   ShieldCheck,
   WifiOff,
   Cpu,
+  Crosshair,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { SmartPlantData } from "../types";
+import CalibrationWizardModal from "./CalibrationWizardModal";
 
 interface SystemSettingsCardProps {
   publishCommand: (command: string) => void;
@@ -97,6 +99,9 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
   const [latestVersion, setLatestVersion] = useState<string>("");
   const [otaUpdateUrl, setOtaUpdateUrl] = useState<string>("");
   const [githubFetched, setGithubFetched] = useState(false);
+
+  // Calibration Wizard state
+  const [calibrationModalOpen, setCalibrationModalOpen] = useState(false);
 
   // OTA install flow
   const [otaInstallStatus, setOtaInstallStatus] = useState<OtaInstallStatus>("idle");
@@ -228,7 +233,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
         </div>
       </div>
 
-      {/* Module Toggles */}
+      {/* Module Toggles & Actions */}
       <div className="px-6 py-4 space-y-0">
         <ToggleRow
           label="Modul Tangki Air"
@@ -249,6 +254,26 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
           accentColor="bg-orange-500"
           onToggle={handleTempToggle}
         />
+        
+        <div className="flex items-center justify-between gap-4 py-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-2 shrink-0 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+              <Crosshair className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Kalibrasi Ulang Sensor</p>
+              <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+                Sesuaikan akurasi kelembapan tanah
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setCalibrationModalOpen(true)}
+            className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition-colors cursor-pointer active:scale-95"
+          >
+            Mulai Kalibrasi
+          </button>
+        </div>
       </div>
 
       {/* OTA Update Section */}
@@ -473,6 +498,13 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
           )}
         </AnimatePresence>
       </div>
+
+      <CalibrationWizardModal
+        isOpen={calibrationModalOpen}
+        onClose={() => setCalibrationModalOpen(false)}
+        telemetry={telemetry}
+        publishCommand={publishCommand}
+      />
     </motion.div>
   );
 }

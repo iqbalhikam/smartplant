@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Droplet } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartPlantData } from "../types";
@@ -14,8 +14,21 @@ const itemVariants = {
 
 export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
   const getSoilStatus = (tanah: number, mode: string, rule: string) => {
-    const rawPercent = ((4095 - tanah) / 4095) * 100;
-    const percentage = Math.max(0, Math.min(100, Math.round(rawPercent)));
+    // Gunakan safe optional chaining dan fallback aman
+    const cBasah = telemetry?.calBasah ?? 0;
+    const cKering = telemetry?.calKering ?? 4095;
+
+    const clampedValue = Math.max(
+      cBasah,
+      Math.min(cKering, tanah)
+    );
+
+    const percent =
+      ((cKering - clampedValue) /
+        (cKering - cBasah || 1)) * // fallback || 1 untuk menghindari division by zero
+      100;
+
+    const percentage = Math.round(percent);
 
     // 1. Status Manual
     if (mode === "MANUAL") {
@@ -146,8 +159,10 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
       <div className="flex justify-between items-center mt-4 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-950/20 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/40">
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase">Nilai Sensor:</span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold">{telemetry.tanah}</span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-600">/ 4095</span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold">{telemetry?.tanah ?? 0}</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-600">
+            / {telemetry?.calKering ?? 4095} (Kalibrasi)
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">

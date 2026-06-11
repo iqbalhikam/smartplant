@@ -14,6 +14,8 @@ export const DEFAULT_TELEMETRY: SmartPlantData = {
   mode: "AUTO",
   batasKering: 1725,
   batasBasah: 1200,
+  calKering: 4095,
+  calBasah: 0,
 };
 
 export function useMQTT() {

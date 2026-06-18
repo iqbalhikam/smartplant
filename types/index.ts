@@ -12,6 +12,7 @@ export interface SmartPlantData {
   suhu?: number;          // Suhu Celcius. Jika -1, berarti sensor fisik dinonaktifkan.
   version?: string;
   rule?: string;          // Kode Fuzzy Logic yang memicu tindakan
+  cooldown?: number;      // Durasi cooldown dalam detik
 }
 
 export interface MQTTConfig {

@@ -12,6 +12,7 @@ interface ThresholdSettingsCardProps {
 export default function ThresholdSettingsCard({ telemetry, deviceId, publishCommand }: ThresholdSettingsCardProps) {
   const [localBasah, setLocalBasah] = useState<number>(telemetry?.batasBasah ?? 0);
   const [localKering, setLocalKering] = useState<number>(telemetry?.batasKering ?? 4095);
+  const [localCooldown, setLocalCooldown] = useState<number>(telemetry?.cooldown ?? 60);
   const [isSaving, setIsSaving] = useState(false);
   const [sliderKey, setSliderKey] = useState(0);
 
@@ -32,8 +33,9 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
   useEffect(() => {
     setLocalBasah(telemetry?.batasBasah ?? 0);
     setLocalKering(telemetry?.batasKering ?? 4095);
+    setLocalCooldown(telemetry?.cooldown ?? 60);
     setSliderKey(prev => prev + 1);
-  }, [telemetry?.batasBasah, telemetry?.batasKering]);
+  }, [telemetry?.batasBasah, telemetry?.batasKering, telemetry?.cooldown]);
 
   const applyPreset = (basah: number, kering: number) => {
     setLocalBasah(basah);
@@ -41,7 +43,9 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
     setSliderKey(prev => prev + 1);
   };
 
-  const hasChanges = localBasah !== (telemetry?.batasBasah ?? 0) || localKering !== (telemetry?.batasKering ?? 4095);
+  const hasChanges = localBasah !== (telemetry?.batasBasah ?? 0) || 
+                     localKering !== (telemetry?.batasKering ?? 4095) || 
+                     localCooldown !== (telemetry?.cooldown ?? 60);
 
   const publishRef = React.useRef(publishCommand);
   publishRef.current = publishCommand;
@@ -62,14 +66,21 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
       if (localKering !== (telemetry?.batasKering ?? 4095)) {
         if (sent) await new Promise(r => setTimeout(r, 500));
         publishRef.current(`LIMIT:KERING:${localKering}`);
+        sent = true;
         toast.success("Batas kering berhasil diperbarui");
+      }
+
+      if (localCooldown !== (telemetry?.cooldown ?? 60)) {
+        if (sent) await new Promise(r => setTimeout(r, 500));
+        publishRef.current(`COOLDOWN:${localCooldown}`);
+        toast.success("Waktu cooldown berhasil diperbarui");
       }
       
       setIsSaving(false);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [localBasah, localKering, telemetry?.batasBasah, telemetry?.batasKering, hasChanges]);
+  }, [localBasah, localKering, localCooldown, telemetry?.batasBasah, telemetry?.batasKering, telemetry?.cooldown, hasChanges]);
 
   return (
     <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
@@ -157,6 +168,32 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
           </div>
           <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
             * Batas Kering mengatur seberapa kering tanah sebelum AI memutuskan untuk menyiram.
+          </p>
+        </div>
+
+        <div className="space-y-4 md:col-span-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Jeda Waktu Cooldown (Detik)</span>
+            <span className="font-mono text-amber-500 dark:text-amber-400 font-bold">{localCooldown} detik</span>
+          </div>
+          <div className="relative pt-1">
+            <input
+              key={`cooldown-${sliderKey}`}
+              type="range"
+              min={10}
+              max={300}
+              defaultValue={localCooldown}
+              onChange={(e) => setLocalCooldown(Number(e.target.value))}
+              style={{ touchAction: 'none' }}
+              className="w-full h-2 rounded-lg cursor-pointer accent-amber-500 bg-slate-200 dark:bg-slate-800"
+            />
+            <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+              <span>10 detik</span>
+              <span>300 detik</span>
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
+            * Mengatur waktu istirahat (cooldown) setelah pompa menyala, agar air meresap sebelum penyiraman berikutnya.
           </p>
         </div>
       </div>

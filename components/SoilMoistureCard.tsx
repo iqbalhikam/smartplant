@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Droplet } from "lucide-react";
+import { Droplet, Thermometer, Leaf, Cloud, Cable, PowerOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartPlantData } from "../types";
 
@@ -12,9 +12,32 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
+const getTanahStatus = (val: number, basah: number, kering: number) => {
+  const range = kering - basah;
+  const percentage = range !== 0 ? (val - basah) / range : 0;
+  if (percentage > 0.8) return { label: "SANGAT KERING", className: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" };
+  if (percentage > 0.5) return { label: "KERING", className: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" };
+  if (percentage > 0.2) return { label: "LEMBAP", className: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20" };
+  return { label: "BASAH", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" };
+};
+
+const getSuhuStatus = (suhu: number | undefined) => {
+  if (suhu === undefined || suhu === -1) return { label: "TIDAK AKTIF", className: "bg-slate-500/10 text-slate-500 border-slate-500/20" };
+  if (suhu < 25) return { label: "DINGIN", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" };
+  if (suhu <= 30) return { label: "NORMAL", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
+  if (suhu <= 35) return { label: "PANAS", className: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" };
+  return { label: "SANGAT PANAS", className: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" };
+};
+
+const getHumidityStatus = (humidity: number | undefined) => {
+  if (humidity === undefined || humidity === -1) return { label: "TIDAK AKTIF", className: "bg-slate-500/10 text-slate-500 border-slate-500/20" };
+  if (humidity < 40) return { label: "KERING", className: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" };
+  if (humidity <= 70) return { label: "NORMAL", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
+  return { label: "LEMBAP", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" };
+};
+
 export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
   const getSoilStatus = (tanah: number, mode: string, rule: string) => {
-    // Gunakan safe optional chaining dan fallback aman
     const cBasah = telemetry?.calBasah ?? 0;
     const cKering = telemetry?.calKering ?? 4095;
 
@@ -25,12 +48,11 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
 
     const percent =
       ((cKering - clampedValue) /
-        (cKering - cBasah || 1)) * // fallback || 1 untuk menghindari division by zero
+        (cKering - cBasah || 1)) * 
       100;
 
     const percentage = Math.round(percent);
 
-    // 1. Status Manual
     if (mode === "MANUAL") {
       return {
         percentage,
@@ -43,7 +65,6 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
       };
     }
 
-    // 2. Status Menyiram (Kritis/Kering) - PERBAIKAN EXACT MATCH
     if (["R1", "R2", "R4", "R6", "R7", "R8"].includes(rule)) {
       return {
         percentage,
@@ -56,7 +77,6 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
       };
     }
 
-    // 3. Status Menyalakan UV - PERBAIKAN EXACT MATCH (Tidak akan salah baca R13 lagi)
     if (["R3", "R9", "R14", "R17"].includes(rule)) {
       return {
         percentage,
@@ -69,7 +89,6 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
       };
     }
 
-    // 4. Status Aman / Tahan Penyiraman - PERBAIKAN EXACT MATCH
     if (["R_STOP", "R15", "R16", "R18", "R19", "R20", "R18/20", "R16/19"].includes(rule)) {
       return {
         percentage,
@@ -82,7 +101,6 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
       };
     }
 
-    // 5. Status Idle / Memantau (Aturan Default & R10, R11, R12, R13 akan masuk ke sini)
     return {
       percentage,
       label: "MEMANTAU",
@@ -100,79 +118,144 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
     telemetry.rule || "IDLE"
   );
 
+  const tanahStatus = getTanahStatus(telemetry.tanah, telemetry.calBasah || 1500, telemetry.calKering || 3500);
+  const suhuStatus = getSuhuStatus(telemetry.suhu);
+  const humidityStatus = getHumidityStatus(telemetry.humidity);
+  
+  const isDhtMissing = telemetry.suhu === -1 || telemetry.humidity === -1;
+
   return (
     <motion.div
       variants={itemVariants}
-      className={`bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-2xl transition-all duration-500 flex flex-col justify-between ${soilMetrics.glowClass} ${soilMetrics.bgGlow}`}
+      className={`flex flex-col h-full min-h-0 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden p-3 ${soilMetrics.bgGlow}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl">
-            <Droplet className="w-5 h-5 text-teal-500 dark:text-teal-400" />
+      <div className="flex-1 overflow-y-auto flex flex-col pr-1 custom-scrollbar">
+        <div className="flex items-center justify-between border-b border-white/50 dark:border-white/10 pb-2 mb-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+              <Leaf className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-xs uppercase">Kondisi Ekosistem</h2>
+              <p className="text-[9px] text-slate-500 dark:text-slate-400">Iklim Mikro & Tanah</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Kelembapan Tanah</h2>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">Status kadar air dalam tanah</p>
+          <span className={`px-2 py-1 rounded-md text-[9px] font-black tracking-widest uppercase ${soilMetrics.badgeBg} shadow-sm ${telemetry.mode === "AUTO" ? "animate-pulse" : ""}`}>
+            {soilMetrics.label}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3 flex-1 mb-2">
+          {/* Soil Moisture Gauge Panel */}
+          <div className="w-full flex items-center justify-between p-3 bg-white/20 dark:bg-slate-900/30 rounded-xl border border-white/30 dark:border-slate-700/50 shadow-inner group">
+            <div className="flex flex-col gap-1 w-1/2">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Droplet className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400" />
+                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">Tanah</span>
+              </div>
+              <div className="flex items-end">
+                <span className="text-3xl font-extrabold tracking-tight bg-linear-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
+                  {soilMetrics.percentage}
+                </span>
+                <span className="text-sm font-bold text-slate-400 mb-1 ml-1">%</span>
+              </div>
+              <div>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${tanahStatus.className}`}>
+                  {tanahStatus.label}
+                </span>
+              </div>
+            </div>
+
+            <div className="w-24 relative transition-transform duration-500 group-hover:scale-105 shrink-0">
+              <svg viewBox="0 0 100 55" className="w-full drop-shadow-md">
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#1e293b" strokeWidth="8" strokeLinecap="round" />
+                <path
+                  d="M 10 50 A 40 40 0 0 1 90 50"
+                  fill="none"
+                  stroke="url(#soil-gauge-gradient)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray="125.66"
+                  strokeDashoffset={125.66 - (125.66 * soilMetrics.percentage) / 100}
+                  className="transition-all duration-1000 ease-out"
+                />
+                <defs>
+                  <linearGradient id="soil-gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#14b8a6" />
+                    <stop offset="50%" stopColor={soilMetrics.gaugeColor} />
+                    <stop offset="100%" stopColor={soilMetrics.gaugeColor} />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          {/* Temperature & Humidity Side by Side */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Suhu Panel */}
+            <div className="flex flex-col p-3 bg-white/20 dark:bg-slate-900/30 rounded-xl border border-white/30 dark:border-slate-700/50 shadow-inner group">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Thermometer className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
+                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">Suhu Udara</span>
+              </div>
+              <div className="flex items-end mb-1">
+                <span className={`text-2xl font-black tracking-tight ${!isDhtMissing ? 'text-orange-500 dark:text-orange-400' : 'text-slate-400'}`}>
+                  {!isDhtMissing ? (telemetry.suhu || 0).toFixed(1) : "--"}
+                </span>
+                <span className={`text-xs font-bold mb-1 ml-1 ${!isDhtMissing ? 'text-orange-400/70' : 'text-slate-400/70'}`}>
+                  °C
+                </span>
+              </div>
+              <div>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${suhuStatus.className}`}>
+                  {suhuStatus.label}
+                </span>
+              </div>
+            </div>
+
+            {/* Kelembapan Udara Panel */}
+            <div className="flex flex-col p-3 bg-white/20 dark:bg-slate-900/30 rounded-xl border border-white/30 dark:border-slate-700/50 shadow-inner group">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Cloud className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">Udara Sekitar</span>
+              </div>
+              <div className="flex items-end mb-1">
+                <span className={`text-2xl font-black tracking-tight ${!isDhtMissing ? 'text-blue-500 dark:text-blue-400' : 'text-slate-400'}`}>
+                  {!isDhtMissing ? (telemetry.humidity || 0).toFixed(1) : "--"}
+                </span>
+                <span className={`text-xs font-bold mb-1 ml-1 ${!isDhtMissing ? 'text-blue-400/70' : 'text-slate-400/70'}`}>
+                  %
+                </span>
+              </div>
+              <div>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${humidityStatus.className}`}>
+                  {humidityStatus.label}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wider ${soilMetrics.badgeBg} shadow-sm ${telemetry.mode === "AUTO" ? "animate-pulse" : ""}`}>
-          {soilMetrics.label}
-        </span>
-      </div>
 
-      <div className="flex flex-col items-center justify-center flex-1 my-4 relative">
-        <div className="w-full max-w-[260px] relative">
-          <svg viewBox="0 0 100 55" className="w-full">
-            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#1e293b" strokeWidth="8" strokeLinecap="round" />
-            <path
-              d="M 10 50 A 40 40 0 0 1 90 50"
-              fill="none"
-              stroke="url(#soil-gauge-gradient)"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray="125.66"
-              strokeDashoffset={125.66 - (125.66 * soilMetrics.percentage) / 100}
-              className="transition-all duration-1000 ease-out"
-            />
-            <defs>
-              <linearGradient id="soil-gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#14b8a6" />
-                <stop offset="50%" stopColor={soilMetrics.gaugeColor} />
-                <stop offset="100%" stopColor={soilMetrics.gaugeColor} />
-              </linearGradient>
-            </defs>
-          </svg>
+        <p className="text-[9px] text-slate-500 dark:text-slate-400 text-center px-2 mb-2 font-medium italic leading-relaxed shrink-0">
+          "{soilMetrics.desc}"
+        </p>
 
-          <div className="absolute bottom-1.5 left-0 right-0 text-center flex flex-col items-center">
-            <span className="text-4xl font-extrabold tracking-tight bg-linear-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
-              {soilMetrics.percentage}%
+        <div className="flex justify-between items-center mt-auto text-[8px] font-mono text-slate-500 dark:text-slate-400 bg-white/30 dark:bg-slate-950/20 px-2 py-1.5 rounded-lg border border-white/40 dark:border-slate-800/40 shrink-0">
+          <div className="flex items-center gap-1">
+            <span className="font-bold uppercase">Sensor Tanah:</span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold">{telemetry?.tanah ?? 0}</span>
+            <span className="opacity-70">/ {telemetry?.calKering ?? 4095}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              &lt;{telemetry.batasBasah}
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-0.5">Kelembapan</span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              &gt;{telemetry.batasKering}
+            </span>
           </div>
-        </div>
-      </div>
-
-      <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-4 mb-4 font-medium italic">
-        "{soilMetrics.desc}"
-      </p>
-
-      <div className="flex justify-between items-center mt-4 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-950/20 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800/40">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase">Nilai Sensor:</span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold">{telemetry?.tanah ?? 0}</span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-600">
-            / {telemetry?.calKering ?? 4095} (Kalibrasi)
-          </span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            &lt;{telemetry.batasBasah}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-rose-500" />
-            &gt;{telemetry.batasKering}
-          </span>
         </div>
       </div>
     </motion.div>

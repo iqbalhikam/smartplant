@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Device {
+  id              String            @id
+  namaAlias       String            @default("Tanaman Baru")
+  status          String            @default("ONLINE")
+  createdAt       DateTime          @default(now())
+  sensorLogs      SensorLog[]
+  actionLogs      FuzzyActionLog[]
+  systemAlerts    SystemAlert[]
+}
+
+model SensorLog {
+  id          String   @id @default(uuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  suhu        Float
+  humidity    Float?
+  tanah       Int
+  cahaya      Int
+  baseDurasi  Int?
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId, createdAt(sort: Desc)])
+}
+
+model FuzzyActionLog {
+  id            String   @id @default(uuid())
+  deviceId      String
+  device        Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  kodeRule      String
+  durasiPompaMs Int
+  lampuNyala    Boolean
+  createdAt     DateTime @default(now())
+
+  @@index([deviceId, createdAt(sort: Desc)])
+}
+
+model SystemAlert {
+  id          String   @id @default(uuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  tipe        String
+  pesan       String
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId, createdAt(sort: Desc)])
+}

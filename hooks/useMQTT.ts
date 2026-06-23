@@ -40,6 +40,8 @@ export function useMQTT() {
   const clientRef = useRef<any>(null);
   const verificationTimeoutRef = useRef<any>(null);
   const dashboardOfflineTimeoutRef = useRef<any>(null);
+  const lastTelemetrySentAtRef = useRef<number>(0);
+  const lastPompaStateRef = useRef<number>(-1);
 
   // Load config from localStorage on mount
   useEffect(() => {
@@ -231,6 +233,36 @@ export function useMQTT() {
             const data = JSON.parse(payload) as SmartPlantData;
             console.log("MQTT Telemetry Received (cahaya):", data.cahaya, "Full Data:", data);
             setTelemetry(data);
+
+            const now = Date.now();
+            if (now - lastTelemetrySentAtRef.current > 5 * 60 * 1000) {
+              lastTelemetrySentAtRef.current = now;
+              fetch("/api/logs/sensor", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deviceId: targetConfig.deviceId,
+                  suhu: data.suhu && data.suhu !== -1 ? data.suhu : 0,
+                  humidity: data.humidity !== undefined && data.humidity !== -1 ? data.humidity : null,
+                  tanah: data.tanah,
+                  cahaya: data.cahaya,
+                }),
+              }).catch(err => console.error("Auto-save telemetry error:", err));
+            }
+
+            if (lastPompaStateRef.current !== -1 && lastPompaStateRef.current === 0 && data.pompa === 1) {
+              fetch("/api/logs/action", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deviceId: targetConfig.deviceId,
+                  kodeRule: data.rule || "MANUAL",
+                  durasiPompaMs: 0, // Hardware controls duration
+                  lampuNyala: data.lampu === 1,
+                }),
+              }).catch(err => console.error("Auto-save action error:", err));
+            }
+            lastPompaStateRef.current = data.pompa;
             
             if (dashboardOfflineTimeoutRef.current) {
               clearTimeout(dashboardOfflineTimeoutRef.current);

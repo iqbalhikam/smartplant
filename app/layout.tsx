@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { Toaster } from "../components/Toaster";
+import { MQTTProvider } from "../components/MQTTProvider";
+import DashboardLayoutClient from "../components/DashboardLayoutClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,8 +39,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          {children}
-          <Toaster />
+          <MQTTProvider>
+            <DashboardLayoutClient>
+              {children}
+            </DashboardLayoutClient>
+            <Toaster />
+          </MQTTProvider>
         </ThemeProvider>
       </body>
     </html>

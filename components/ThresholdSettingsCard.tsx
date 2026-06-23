@@ -83,8 +83,8 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
   }, [localBasah, localKering, localCooldown, telemetry?.batasBasah, telemetry?.batasKering, telemetry?.cooldown, hasChanges]);
 
   return (
-    <section className="p-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 pb-3 mb-4 h-[44px]">
+    <section className="h-full flex flex-col p-4 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 pb-2 mb-3 h-[40px]">
         <div className="flex items-center gap-2.5">
           <div className="p-1.5 bg-teal-500/10 rounded-lg border border-teal-500/20">
             <Sliders className="w-4 h-4 text-teal-500 dark:text-teal-400" />
@@ -102,7 +102,8 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
         </div>
       </div>
 
-      <div className="mb-6 flex flex-col md:flex-row md:items-center gap-3">
+      <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+        <div className="mb-4 flex flex-col md:flex-row md:items-center gap-2">
         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Template Preset:</span>
         <div className="flex flex-wrap gap-2">
           {dynamicPresets.map((preset, idx) => (
@@ -118,7 +119,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
           <div className="flex justify-between text-xs">
             <span className="text-slate-600 dark:text-slate-400 font-medium">Batas Tanah Basah (Cukup Air)</span>
@@ -198,7 +199,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
         </div>
       </div>
 
-      <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800/60 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs">
+      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs mb-1">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-950/50 rounded-lg border border-slate-200 dark:border-slate-800/60 font-mono">
           <Database className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
           <span className="text-slate-500">Sub:</span>
@@ -209,6 +210,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
           <span className="text-slate-500">Pub:</span>
           <span className="text-slate-700 dark:text-slate-300 font-semibold">{deviceId}/cmd</span>
         </div>
+      </div>
       </div>
     </section>
   );

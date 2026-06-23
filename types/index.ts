@@ -8,8 +8,10 @@ export interface SmartPlantData {
   batasBasah: number;
   calKering: number;      // Nilai kalibrasi batas kering dari ESP32
   calBasah: number;       // Nilai kalibrasi batas basah dari ESP32
+  baseDurasi?: number;    // Durasi dasar penyiraman (milidetik)
   air?: number;           // Level air. Jika -1, berarti sensor fisik tidak dipasang/dinonaktifkan.
   suhu?: number;          // Suhu Celcius. Jika -1, berarti sensor fisik dinonaktifkan.
+  humidity?: number;      // Kelembapan Udara (%). Jika -1, berarti sensor fisik dinonaktifkan.
   version?: string;
   rule?: string;          // Kode Fuzzy Logic yang memicu tindakan
   cooldown?: number;      // Durasi cooldown dalam detik

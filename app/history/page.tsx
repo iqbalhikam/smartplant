@@ -33,9 +33,9 @@ export default function HistoryPage() {
   const [actionLogs, setActionLogs] = useState<ActionLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = async (background = false) => {
     if (!activeDeviceId) return;
-    setIsLoading(true);
+    if (!background) setIsLoading(true);
     try {
       const [sensorRes, actionRes] = await Promise.all([
         fetch(`/api/logs/sensor?deviceId=${activeDeviceId}`),
@@ -49,12 +49,19 @@ export default function HistoryPage() {
     } catch (err) {
       console.error("Failed to fetch history:", err);
     } finally {
-      setIsLoading(false);
+      if (!background) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
+    
+    // Auto-refresh setiap 5 detik untuk mendapatkan data realtime
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, [activeDeviceId]);
 
   const sensorChartData = React.useMemo(() => {
@@ -111,7 +118,7 @@ export default function HistoryPage() {
             Kembali
           </button>
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(false)}
             disabled={isLoading}
             className="flex items-center gap-2 px-3 py-1.5 text-xs bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 rounded-lg hover:bg-teal-500/20 transition-colors disabled:opacity-50"
           >

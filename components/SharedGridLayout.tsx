@@ -131,7 +131,7 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
               <WidgetContextMenu widgetId={widget.id}>
                 {/* Drag Handle */}
                 {isEditMode && (
-                  <div className="drag-handle absolute top-2 right-2 p-1.5 bg-slate-800/80 backdrop-blur rounded-lg text-white z-[100] cursor-grab hover:bg-slate-700 active:cursor-grabbing border border-white/20 shadow-xl">
+                  <div className="drag-handle absolute top-2 right-2 p-1.5 bg-slate-800/80 backdrop-blur rounded-lg text-white z-100 cursor-grab hover:bg-slate-700 active:cursor-grabbing border border-white/20 shadow-xl">
                     <GripHorizontal className="w-4 h-4" />
                   </div>
                 )}

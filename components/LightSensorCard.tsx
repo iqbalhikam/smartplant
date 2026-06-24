@@ -13,7 +13,7 @@ const itemVariants = {
 };
 
 export default function LightSensorCard({ telemetry }: LightSensorCardProps) {
-  const isTerang = telemetry.cahaya === 0;
+  const isTerang = telemetry.cahaya === 1;
 
   return (
     <motion.div

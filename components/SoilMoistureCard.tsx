@@ -87,7 +87,7 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
         {/* Tanah */}
-        <div className="bg-gradient-to-br from-white/40 to-white/10 dark:from-slate-800/60 dark:to-slate-900/40 rounded-xl p-4 border border-white/40 dark:border-slate-700/50 flex flex-col sm:col-span-2 relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+        <div className="bg-linear-to-br from-white/40 to-white/10 dark:from-slate-800/60 dark:to-slate-900/40 rounded-xl p-4 border border-white/40 dark:border-slate-700/50 flex flex-col sm:col-span-2 relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
           <div className="flex justify-between items-center relative z-10">
             <div>
               <div className="flex items-center gap-2 mb-3">

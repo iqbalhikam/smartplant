@@ -123,3 +123,19 @@ html, body {
   z-index: 50;
   opacity: 0.8;
 }
+
+/* React Grid Layout Smooth Transitions */
+.react-grid-item {
+  transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease !important;
+}
+
+.react-grid-item.react-draggable-dragging,
+.react-grid-item.react-resizable-resizing {
+  transition: none !important; /* Disable transition during drag/resize for instant response */
+}
+
+/* Ensure React Grid Layout has a width */
+.react-grid-layout {
+  width: 100%;
+  display: block;
+}

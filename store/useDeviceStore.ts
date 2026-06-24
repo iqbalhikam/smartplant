@@ -28,6 +28,7 @@ interface DeviceStore {
   addWidget: (page: string, type: string, x?: number, y?: number, w?: number, h?: number) => void;
   removeWidget: (page: string, id: string) => void;
   updateLayout: (page: string, layout: { i: string; x: number; y: number; w: number; h: number }[]) => void;
+  resetLayout: (page: string) => void;
 }
 
 const DEFAULT_LAYOUTS: Record<string, WidgetLayout[]> = {
@@ -109,7 +110,14 @@ export const useDeviceStore = create<DeviceStore>()(
             [page]: newWidgets
           }
         };
-      })
+      }),
+      
+      resetLayout: (page) => set((state) => ({
+        layouts: {
+          ...state.layouts,
+          [page]: DEFAULT_LAYOUTS[page] || []
+        }
+      }))
     }),
     {
       name: "smartplant-dashboard-storage",

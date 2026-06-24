@@ -5,7 +5,7 @@ import { useDeviceStore } from "../store/useDeviceStore";
 import DashboardContextMenu from "./DashboardContextMenu";
 import WidgetContextMenu from "./WidgetContextMenu";
 import WidgetSelectorModal from "./WidgetSelectorModal";
-import { Loader2, GripHorizontal } from "lucide-react";
+import { Loader2, GripHorizontal, RotateCcw } from "lucide-react";
 
 // @ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
@@ -21,7 +21,7 @@ interface SharedGridLayoutProps {
 
 export default function SharedGridLayout({ pageName, renderWidget }: SharedGridLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const { layouts, isEditMode, updateLayout, setActivePage } = useDeviceStore();
+  const { layouts, isEditMode, updateLayout, setActivePage, resetLayout } = useDeviceStore();
 
   useEffect(() => {
     setIsMounted(true);
@@ -40,11 +40,36 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
   }
 
   const widgets = layouts[pageName] || [];
-  const layoutItems = widgets.map(w => ({ i: w.id, x: w.x, y: w.y, w: w.w, h: w.h, minW: 2, minH: 2 }));
+  
+  // Create layout items
+  const layoutItems = widgets.map(w => ({ 
+    i: w.id, 
+    x: w.x, 
+    y: w.y, 
+    w: w.w, 
+    h: w.h, 
+    minW: 2, 
+    minH: 2 
+  }));
 
-  const handleLayoutChange = (currentLayout: any) => {
+  // Create a full layouts object for all breakpoints to prevent layout collapsing
+  // when the screen size doesn't match 'lg'
+  const responsiveLayouts = {
+    lg: layoutItems,
+    md: layoutItems,
+    sm: layoutItems.map(item => ({ ...item, w: Math.max(item.w, 3) })), // slightly wider on sm
+    xs: layoutItems.map(item => ({ ...item, w: 4, x: 0 })), // full width on mobile
+    xxs: layoutItems.map(item => ({ ...item, w: 2, x: 0 })) // full width on small mobile
+  };
+
+  const handleLayoutChange = (currentLayout: any, allLayouts: any) => {
+    console.log("Layout Changed:", { currentLayout, allLayouts });
+    // Update store with current layout (for the active breakpoint)
     updateLayout(pageName, currentLayout);
   };
+
+  // Debugging log to ensure layouts are correct before render
+  console.log("Current responsive layouts:", responsiveLayouts);
 
   return (
     <DashboardContextMenu>
@@ -54,6 +79,17 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
         {isEditMode && (
           <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg flex items-center justify-between">
             <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">Mode Tata Letak Aktif. Anda dapat menggeser dan mengubah ukuran widget.</p>
+            <button 
+              onClick={() => {
+                if(window.confirm("Apakah Anda yakin ingin mengatur ulang tata letak ke pengaturan awal?")) {
+                  resetLayout(pageName);
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Layout
+            </button>
           </div>
         )}
 
@@ -64,8 +100,8 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
         )}
 
         <ResponsiveGridLayout
-          className={`layout ${isEditMode ? 'is-editing' : ''}`}
-          layouts={{ lg: layoutItems }}
+          className={`layout w-full block ${isEditMode ? 'is-editing' : ''}`}
+          layouts={responsiveLayouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={50}
@@ -75,10 +111,12 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
           draggableHandle=".drag-handle"
           margin={[16, 16]}
           useCSSTransforms={true}
+          measureBeforeMount={false}
         >
           {widgets.map((widget) => (
             <div 
               key={widget.id} 
+              data-grid={{ x: widget.x, y: widget.y, w: widget.w, h: widget.h, minW: 2, minH: 2 }}
               className={`h-full min-h-0 flex flex-col relative bg-transparent ${isEditMode ? "ring-2 ring-indigo-400 border-dashed border-2 border-transparent rounded-2xl" : ""}`}
             >
               <WidgetContextMenu widgetId={widget.id}>

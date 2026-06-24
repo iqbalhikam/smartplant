@@ -3,10 +3,10 @@
 import React from "react";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { useDeviceStore } from "../store/useDeviceStore";
-import { Plus, LayoutTemplate, Lock } from "lucide-react";
+import { Plus, LayoutTemplate, Lock, RotateCcw } from "lucide-react";
 
 export default function DashboardContextMenu({ children }: { children: React.ReactNode }) {
-  const { isEditMode, setIsEditMode, setIsWidgetModalOpen } = useDeviceStore();
+  const { isEditMode, setIsEditMode, setIsWidgetModalOpen, resetLayout, activePage } = useDeviceStore();
 
   return (
     <ContextMenu.Root>
@@ -35,6 +35,18 @@ export default function DashboardContextMenu({ children }: { children: React.Rea
           >
             {isEditMode ? <Lock className="w-4 h-4" /> : <LayoutTemplate className="w-4 h-4" />}
             <span>{isEditMode ? "Lock Layout" : "Edit Layout"}</span>
+          </ContextMenu.Item>
+
+          <ContextMenu.Item 
+            className="flex items-center gap-2 px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+            onClick={() => {
+              if(window.confirm("Apakah Anda yakin ingin mengatur ulang tata letak ke pengaturan awal?")) {
+                resetLayout(activePage);
+              }
+            }}
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset Layout</span>
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>

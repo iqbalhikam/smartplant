@@ -5,7 +5,7 @@ import { useDeviceStore } from "../store/useDeviceStore";
 import DashboardContextMenu from "./DashboardContextMenu";
 import WidgetContextMenu from "./WidgetContextMenu";
 import WidgetSelectorModal from "./WidgetSelectorModal";
-import { Loader2, GripHorizontal, RotateCcw } from "lucide-react";
+import { Loader2, GripHorizontal, RotateCcw, Save } from "lucide-react";
 
 // @ts-ignore
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
@@ -21,7 +21,7 @@ interface SharedGridLayoutProps {
 
 export default function SharedGridLayout({ pageName, renderWidget }: SharedGridLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const { layouts, isEditMode, updateLayout, setActivePage, resetLayout } = useDeviceStore();
+  const { layouts, isEditMode, setIsEditMode, updateLayout, setActivePage, resetLayout } = useDeviceStore();
 
   useEffect(() => {
     setIsMounted(true);
@@ -79,17 +79,26 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
         {isEditMode && (
           <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg flex items-center justify-between">
             <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">Mode Tata Letak Aktif. Anda dapat menggeser dan mengubah ukuran widget.</p>
-            <button 
-              onClick={() => {
-                if(window.confirm("Apakah Anda yakin ingin mengatur ulang tata letak ke pengaturan awal?")) {
-                  resetLayout(pageName);
-                }
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset Layout
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => {
+                  if(window.confirm("Apakah Anda yakin ingin mengatur ulang tata letak ke pengaturan awal?")) {
+                    resetLayout(pageName);
+                  }
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Layout
+              </button>
+              <button 
+                onClick={() => setIsEditMode(false)}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors shadow-sm"
+              >
+                <Save className="w-3.5 h-3.5" />
+                Simpan
+              </button>
+            </div>
           </div>
         )}
 

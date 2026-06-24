@@ -81,7 +81,7 @@ function SortableItem({ id, isEditMode, children, colSpan, rowSpan, onResize }: 
       {/* Resize Overlay Controls */}
       {isEditMode && (
         <div 
-          className="absolute bottom-2 right-2 flex gap-1 z-[100] pointer-events-auto"
+          className="absolute bottom-2 right-2 flex gap-1 z-100 pointer-events-auto"
           onPointerDown={(e) => e.stopPropagation()} // Cegah event drag saat klik tombol
           onClick={(e) => e.stopPropagation()} // Cegah Edit Mode tertutup saat resize
         >

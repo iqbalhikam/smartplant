@@ -84,7 +84,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="relative h-screen w-full overflow-hidden flex flex-col bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-teal-500 selection:text-black"
+          className="relative h-screen w-full overflow-hidden flex flex-col bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-teal-500 selection:text-black"
         >
           {/* Background Glowing Blobs Container */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">

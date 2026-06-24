@@ -5,6 +5,10 @@ import { useDeviceStore } from "../../store/useDeviceStore";
 import { Loader2, RefreshCw, Thermometer, Droplets, Sun, BrainCircuit, History } from "lucide-react";
 import DashboardHeader from "../../components/DashboardHeader";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const SensorChart = dynamic(() => import("../../components/HistoryCharts").then(mod => mod.SensorChart), { ssr: false, loading: () => <div className="h-64 w-full flex justify-center items-center"><Loader2 className="w-8 h-8 animate-spin text-teal-500" /></div> });
+const ActionChart = dynamic(() => import("../../components/HistoryCharts").then(mod => mod.ActionChart), { ssr: false, loading: () => <div className="h-64 w-full flex justify-center items-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div> });
 
 interface SensorLog {
   id: string;
@@ -54,6 +58,20 @@ export default function HistoryPage() {
     fetchData();
   }, [activeDeviceId]);
 
+  const chartData = React.useMemo(() => {
+    return [...sensorLogs].reverse().map(log => ({
+      ...log,
+      time: new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })
+    }));
+  }, [sensorLogs]);
+
+  const actionChartData = React.useMemo(() => {
+    return [...actionLogs].reverse().map(log => ({
+      ...log,
+      time: new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })
+    }));
+  }, [actionLogs]);
+
   if (!activeDeviceId) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center text-slate-500">
@@ -65,8 +83,8 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-6xl mx-auto">
+    <div className="h-full w-full overflow-y-auto bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8 font-sans">
+      <div className="max-w-6xl mx-auto pb-20">
         
         {/* Simple Header for History Page */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
@@ -97,7 +115,7 @@ export default function HistoryPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
-          {/* Sensor History Table */}
+          {/* Sensor History Table & Chart */}
           <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg">
@@ -111,32 +129,37 @@ export default function HistoryPage() {
             ) : sensorLogs.length === 0 ? (
               <div className="text-center py-12 text-slate-500">Belum ada data telemetri.</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <tr>
-                      <th className="px-4 py-3 rounded-tl-lg">Waktu</th>
-                      <th className="px-4 py-3">Suhu</th>
-                      <th className="px-4 py-3">Kelembapan</th>
-                      <th className="px-4 py-3 rounded-tr-lg">Cahaya</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sensorLogs.map((log) => (
-                      <tr key={log.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
-                        <td className="px-4 py-3">{log.suhu > 0 ? `${log.suhu}°C` : '-'}</td>
-                        <td className="px-4 py-3">{log.tanah}</td>
-                        <td className="px-4 py-3">{log.cahaya}</td>
+              <div className="flex flex-col gap-6">
+                {/* Chart Area */}
+                <SensorChart data={chartData} />
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                      <tr>
+                        <th className="px-4 py-3 rounded-tl-lg">Waktu</th>
+                        <th className="px-4 py-3">Suhu</th>
+                        <th className="px-4 py-3">Kelembapan</th>
+                        <th className="px-4 py-3 rounded-tr-lg">Cahaya</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {sensorLogs.map((log) => (
+                        <tr key={log.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                          <td className="px-4 py-3 font-mono text-xs">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
+                          <td className="px-4 py-3">{log.suhu > 0 ? `${log.suhu}°C` : '-'}</td>
+                          <td className="px-4 py-3">{log.tanah}</td>
+                          <td className="px-4 py-3">{log.cahaya}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Action History Table */}
+          {/* Action History Table & Chart */}
           <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg">
@@ -150,31 +173,36 @@ export default function HistoryPage() {
             ) : actionLogs.length === 0 ? (
               <div className="text-center py-12 text-slate-500">Belum ada data keputusan penyiraman.</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <tr>
-                      <th className="px-4 py-3 rounded-tl-lg">Waktu</th>
-                      <th className="px-4 py-3">Kode Rule</th>
-                      <th className="px-4 py-3">Durasi</th>
-                      <th className="px-4 py-3 rounded-tr-lg">Lampu UV</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {actionLogs.map((log) => (
-                      <tr key={log.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
-                        <td className="px-4 py-3"><span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded font-mono text-xs text-indigo-600 dark:text-indigo-400">{log.kodeRule}</span></td>
-                        <td className="px-4 py-3">{log.durasiPompaMs > 0 ? `${log.durasiPompaMs}ms` : 'Otomatis'}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${log.lampuNyala ? 'bg-amber-500/10 text-amber-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                            {log.lampuNyala ? 'ON' : 'OFF'}
-                          </span>
-                        </td>
+              <div className="flex flex-col gap-6">
+                {/* Chart Area */}
+                <ActionChart data={actionChartData} />
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                      <tr>
+                        <th className="px-4 py-3 rounded-tl-lg">Waktu</th>
+                        <th className="px-4 py-3">Kode Rule</th>
+                        <th className="px-4 py-3">Durasi</th>
+                        <th className="px-4 py-3 rounded-tr-lg">Lampu UV</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {actionLogs.map((log) => (
+                        <tr key={log.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                          <td className="px-4 py-3 font-mono text-xs">{new Date(log.createdAt).toLocaleString("id-ID")}</td>
+                          <td className="px-4 py-3"><span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded font-mono text-xs text-indigo-600 dark:text-indigo-400">{log.kodeRule}</span></td>
+                          <td className="px-4 py-3">{log.durasiPompaMs > 0 ? `${log.durasiPompaMs}ms` : 'Otomatis'}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded text-xs font-semibold ${log.lampuNyala ? 'bg-amber-500/10 text-amber-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                              {log.lampuNyala ? 'ON' : 'OFF'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

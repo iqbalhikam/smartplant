@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wifi, WifiOff, Loader2, LogOut, LayoutDashboard, Settings } from "lucide-react";
+import { Wifi, WifiOff, Loader2, LogOut, LayoutDashboard, Settings, History } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import DeviceSelector from "./DeviceSelector";
 
@@ -42,6 +42,15 @@ export default function DashboardHeader({
             title="Dashboard"
           >
             <LayoutDashboard className="w-4 h-4" />
+          </Link>
+          <Link
+            href="/history"
+            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
+              pathname === "/history" ? "bg-teal-500 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+            }`}
+            title="Riwayat Data"
+          >
+            <History className="w-4 h-4" />
           </Link>
           <Link
             href="/settings"

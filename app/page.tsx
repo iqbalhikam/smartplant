@@ -26,13 +26,15 @@ import LightSensorCard from "../components/LightSensorCard";
 import ControlsCard from "../components/ControlsCard";
 import AIAssistantCard from "../components/AIAssistantCard";
 import AIFuzzyStatusCard from "../components/AIFuzzyStatusCard";
+import HistoryCard from "../components/HistoryCard";
 import { Loader2 } from "lucide-react";
 
-const INITIAL_CARD_ORDER = ['ai-status', 'kontrol', 'ekosistem', 'cahaya', 'ai-assistant'];
+const INITIAL_CARD_ORDER = ['ai-status', 'kontrol', 'riwayat', 'ekosistem', 'cahaya', 'ai-assistant'];
 
 const INITIAL_CARD_SIZES: Record<string, { colSpan: number, rowSpan: number }> = {
   "ai-status": { colSpan: 8, rowSpan: 2 },
   "kontrol": { colSpan: 4, rowSpan: 6 },
+  "riwayat": { colSpan: 12, rowSpan: 3 },
   "ekosistem": { colSpan: 5, rowSpan: 4 },
   "cahaya": { colSpan: 3, rowSpan: 2 },
   "ai-assistant": { colSpan: 3, rowSpan: 2 },
@@ -85,7 +87,7 @@ function SortableItem({ id, isEditMode, children, colSpan, rowSpan, onResize }: 
       {/* Resize Overlay Controls */}
       {isEditMode && (
         <div 
-          className="absolute bottom-2 right-2 flex gap-1 z-[100] pointer-events-auto"
+          className="absolute bottom-2 right-2 flex gap-1 z-100 pointer-events-auto"
           onPointerDown={(e) => e.stopPropagation()} // Cegah event drag saat klik tombol
           onClick={(e) => e.stopPropagation()} // Cegah Edit Mode tertutup saat resize
         >
@@ -150,6 +152,12 @@ export default function SmartPlantCareDashboard() {
            localStorage.setItem("smartplant-card-order", JSON.stringify(parsed));
         }
 
+        // Migration: add riwayat if not exists
+        if (!parsed.includes('riwayat')) {
+          parsed.splice(2, 0, 'riwayat'); // insert after kontrol
+          localStorage.setItem("smartplant-card-order", JSON.stringify(parsed));
+        }
+
         setCardOrder(parsed); 
       } catch (e) {}
     }
@@ -165,6 +173,13 @@ export default function SmartPlantCareDashboard() {
           delete parsedSizes["cahaya-ai"];
           localStorage.setItem("smartplant-card-sizes", JSON.stringify(parsedSizes));
         }
+        
+        // Migration: add riwayat sizes if not exists
+        if (!parsedSizes["riwayat"]) {
+          parsedSizes["riwayat"] = { colSpan: 12, rowSpan: 3 };
+          localStorage.setItem("smartplant-card-sizes", JSON.stringify(parsedSizes));
+        }
+
         setCardSizes(parsedSizes); 
       } catch (e) {}
     }
@@ -274,6 +289,7 @@ export default function SmartPlantCareDashboard() {
                 >
                   {id === "ai-status" && <AIFuzzyStatusCard telemetry={telemetry} />}
                   {id === "kontrol" && <ControlsCard telemetry={telemetry} publishCommand={publishCommand} />}
+                  {id === "riwayat" && <HistoryCard />}
                   {id === "ekosistem" && <SoilMoistureCard telemetry={telemetry} />}
                   {id === "cahaya" && <LightSensorCard telemetry={telemetry} />}
                   {id === "ai-assistant" && <AIAssistantCard telemetry={telemetry} />}

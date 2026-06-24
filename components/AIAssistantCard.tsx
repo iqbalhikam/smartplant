@@ -3,6 +3,7 @@ import { Brain, AlertTriangle, Loader2, Sparkles, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { SmartPlantData } from "../types";
+import { useDeviceStore } from "../store/useDeviceStore";
 
 interface AIAssistantCardProps {
   telemetry: SmartPlantData;
@@ -14,6 +15,7 @@ const itemVariants = {
 };
 
 export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
+  const { activeDeviceId } = useDeviceStore();
   const [aiEnabled, setAiEnabled] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState("");
@@ -26,12 +28,17 @@ export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
     setAiResult("");
 
     try {
+      const payload = {
+        ...telemetry,
+        deviceId: activeDeviceId
+      };
+
       const response = await fetch("/api/analyze-plant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(telemetry),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();

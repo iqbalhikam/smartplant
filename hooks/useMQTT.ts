@@ -257,7 +257,7 @@ export function useMQTT() {
                 body: JSON.stringify({
                   deviceId: targetConfig.deviceId,
                   kodeRule: data.rule || "MANUAL",
-                  durasiPompaMs: 0, // Hardware controls duration
+                  durasiPompaMs: data.baseDurasi || 0, // Use duration from ESP32 telemetry
                   lampuNyala: data.lampu === 1,
                 }),
               }).catch(err => console.error("Auto-save action error:", err));

@@ -16,6 +16,7 @@ export function SensorChart({ data }: { data: any[] }) {
           <Legend wrapperStyle={{ fontSize: '12px' }} />
           <Line yAxisId="left" type="monotone" dataKey="tanah" name="Kelembapan Tanah" stroke="#10b981" strokeWidth={2} dot={false} />
           <Line yAxisId="right" type="monotone" dataKey="suhu" name="Suhu (°C)" stroke="#f59e0b" strokeWidth={2} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="humidity" name="Kelembapan Udara (%)" stroke="#3b82f6" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

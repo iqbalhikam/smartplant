@@ -31,18 +31,34 @@ export default function SoilMoistureCard({ telemetry }: SoilMoistureCardProps) {
     percentage = Math.max(0, Math.min(100, percentage));
   }
   
-  // Status badges
-  let soilStatus = "NORMAL";
-  let soilColor = "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
-  if (percentage < 20) {
+  // Status badges (Meniru Logika Fuzzifikasi AI ESP32)
+  const bKering = telemetry.batasKering || 1725;
+  const bBasah = telemetry.batasBasah || 1200;
+  
+  let soilStatus = "";
+  let soilColor = "";
+  let circleColor = "";
+
+  if (rawTanah > bKering + 400) {
     soilStatus = "SANGAT KERING";
     soilColor = "text-red-500 bg-red-500/10 border-red-500/20";
-  } else if (percentage < 40) {
+    circleColor = "text-red-500";
+  } else if (rawTanah > bKering) {
     soilStatus = "KERING";
     soilColor = "text-orange-500 bg-orange-500/10 border-orange-500/20";
-  } else if (percentage > 80) {
+    circleColor = "text-orange-500";
+  } else if (rawTanah > bBasah) {
+    soilStatus = "NORMAL/LEMBAP";
+    soilColor = "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
+    circleColor = "text-emerald-500";
+  } else if (rawTanah > bBasah - 400) {
+    soilStatus = "BASAH";
+    soilColor = "text-cyan-500 bg-cyan-500/10 border-cyan-500/20";
+    circleColor = "text-cyan-500";
+  } else {
     soilStatus = "SANGAT BASAH";
     soilColor = "text-blue-500 bg-blue-500/10 border-blue-500/20";
+    circleColor = "text-blue-500";
   }
   
   let tempStatus = "NORMAL";

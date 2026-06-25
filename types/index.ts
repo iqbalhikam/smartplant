@@ -9,6 +9,7 @@ export interface SmartPlantData {
   calKering: number;      // Nilai kalibrasi batas kering dari ESP32
   calBasah: number;       // Nilai kalibrasi batas basah dari ESP32
   baseDurasi?: number;    // Durasi dasar penyiraman (milidetik)
+  durasiPompa?: number;   // Durasi aktual penyiraman pompa (milidetik)
   air?: number;           // Level air. Jika -1, berarti sensor fisik tidak dipasang/dinonaktifkan.
   suhu?: number;          // Suhu Celcius. Jika -1, berarti sensor fisik dinonaktifkan.
   humidity?: number;      // Kelembapan Udara (%). Jika -1, berarti sensor fisik dinonaktifkan.

@@ -1,0 +1,516 @@
+// ============================================================
+// KODE FINAL - SMART PLANT ULTIMATE (VERSI 3.0.6 - SINGLE CALIBRATION)
+// Fitur: 4D Fuzzy Matrix + Dynamic Scale Factor Calibration (Variable Tunggal)
+// ============================================================
+
+#include <WiFi.h>
+#include <WiFiClientSecure.h> 
+#include <PubSubClient.h> 
+#include <Preferences.h>      
+#include <BLEDevice.h>        
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include <HTTPClient.h>       
+#include <Update.h>           
+#include <DHT.h>              
+
+// --- DEFINISI PIN ---
+#define PIN_SOIL 34      
+#define PIN_LDR 33       
+#define RELAY_POMPA 26   
+#define RELAY_LAMPU 27   
+#define PIN_LED_BOARD 2  
+#define PIN_BOOT 0       
+
+// --- DEFINISI PIN MODULAR ---
+#define PIN_WATER_LEVEL 32
+#define PIN_DHT 15
+#define DHTTYPE DHT11
+
+// --- KONFIGURASI MQTT ---
+const char* mqtt_server = "fb8c003c6c2b4595b6782aea4e93d803.s1.eu.hivemq.cloud"; 
+const char* mqtt_user = "iqbalplant";      
+const char* mqtt_pass = "Iqbalplant20023310004";      
+const int mqtt_port = 8883; 
+
+// --- KONFIGURASI BLUETOOTH (WebBLE) ---
+#define SERVICE_UUID           "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID_RX "beb5483e-36e1-4688-b7f5-ea07361b26a8" 
+#define CHARACTERISTIC_UUID_TX "cba1d466-344c-4be3-ab3f-189f80dd7518" 
+BLECharacteristic *pCharacteristicTX;
+
+// --- VARIABEL GLOBAL & VERSI ---
+String deviceID = "";
+String topic_telemetry = "";
+String topic_command = "";
+const String CURRENT_VERSION = "v3.0.6"; 
+
+Preferences preferences; 
+WiFiClientSecure espClient; 
+PubSubClient client(espClient);
+DHT dht(PIN_DHT, DHTTYPE);
+
+bool modeBluetooth = false; 
+bool isOtaRunning = false; 
+
+int batasKering = 1725; 
+int batasBasah = 1200;  
+
+int calKering = 2700;
+int calBasah = 1200;
+
+// --- JANGKAR TUNING TUNGGAL (JALUR UTAMA KALIBRASI POMPA) ---
+int baseDurasi = 12000; // Nilai default 12 detik untuk batas maksimal Sangat Kering
+
+bool modeAuto = true;    
+bool modulAirAktif = false;
+bool modulSuhuAktif = false;
+
+unsigned long waktuTerakhirCek = 0;
+unsigned long waktuTerakhirKirim = 0;
+unsigned long waktuPompaMulai = 0;
+int durasiPompaAktif = 0;
+bool pompaSedangMenyiram = false;
+unsigned long waktuCooldownMulai = 0;
+bool sedangCooldown = false;
+unsigned long LAMA_COOLDOWN = 60000; 
+String ruleTerakhir = "N/A"; 
+
+// ==========================================
+// 1. KELAS BLUETOOTH CALLBACK 
+// ==========================================
+class KendaliBluetooth: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string rxValue = pCharacteristic->getValue();
+      if (rxValue.length() > 0) {
+        String payload = String(rxValue.c_str());
+        if (payload == "SCAN") {
+          WiFi.mode(WIFI_STA);
+          WiFi.disconnect();
+          delay(100);
+          int n = WiFi.scanNetworks();
+          String wifiList = "";
+          if (n == 0) wifiList = "Tidak ada WiFi";
+          else {
+            int maxWifi = (n > 5) ? 5 : n; 
+            for (int i = 0; i < maxWifi; ++i) {
+              wifiList += WiFi.SSID(i);
+              if (i < maxWifi - 1) wifiList += ","; 
+            }
+          }
+          pCharacteristicTX->setValue(wifiList.c_str());
+          pCharacteristicTX->notify();
+        } else {
+          int batasIndex = payload.indexOf('|');
+          if (batasIndex != -1) {
+            preferences.begin("kredensial", false);
+            preferences.putString("ssid", payload.substring(0, batasIndex));
+            preferences.putString("pass", payload.substring(batasIndex + 1));
+            preferences.end();
+            delay(1000); ESP.restart(); 
+          }
+        }
+      }
+    }
+};
+
+// ==========================================
+// 2. FUNGSI OTA UPDATE 
+// ==========================================
+void performOTA(String url) {
+  isOtaRunning = true;
+  if (client.connected()) {
+    String topicOta = deviceID + "/ota";
+    client.publish(topicOta.c_str(), "Memulai OTA Update...");
+    delay(500); 
+  }
+  client.disconnect(); espClient.stop(); delay(2000); 
+  WiFiClientSecure clientOTA; clientOTA.setInsecure(); 
+  HTTPClient http; http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); http.setTimeout(60000); 
+  http.begin(clientOTA, url); 
+  int httpCode = http.GET();
+  if (httpCode == HTTP_CODE_OK) {
+    int contentLength = http.getSize();
+    if (Update.begin(contentLength)) {
+      WiFiClient& clientHttp = http.getStream();
+      size_t written = Update.writeStream(clientHttp);
+      if (Update.end() && Update.isFinished()) {
+        delay(1000); ESP.restart();
+      }
+    }
+  }
+  http.end();
+  isOtaRunning = false; 
+}
+
+// ==========================================
+// 3. OTAK SUPER AI (4-VARIABLE FUZZY MATRIX + SCALE LOGIC)
+// ==========================================
+int bacaTanahRataRata() {
+  long total = 0;
+  for (int i = 0; i < 10; i++) { total += analogRead(PIN_SOIL); delay(5); }
+  return total / 10; 
+}
+
+void prosesFuzzyLogic() {
+  if (!modeAuto || pompaSedangMenyiram) return;
+  if (sedangCooldown) {
+    if (millis() - waktuCooldownMulai >= LAMA_COOLDOWN) sedangCooldown = false;
+    else return; 
+  }
+
+  int tanah = bacaTanahRataRata();
+  int isGelap = digitalRead(PIN_LDR); 
+  
+  float suhu = dht.readTemperature(); 
+  if (isnan(suhu)) suhu = 28.0; 
+  float kelembapanUdara = dht.readHumidity();
+  if (isnan(kelembapanUdara)) kelembapanUdara = 60.0;
+
+  if (modulAirAktif) {
+    if (analogRead(PIN_WATER_LEVEL) > 3000) return; 
+  }
+
+  // --- FUZZIFIKASI 4 VARIABEL ---
+  String catTanah = (tanah > batasKering + 400) ? "SANGAT_KERING" : (tanah > batasKering) ? "KERING" : (tanah > batasBasah) ? "LEMBAP" : (tanah > batasBasah - 400) ? "BASAH" : "SANGAT_BASAH";
+  String catSuhu = (suhu > 34.0) ? "SANGAT_PANAS" : (suhu > 30.0) ? "PANAS" : (suhu > 24.0) ? "NORMAL" : "DINGIN";
+  String catCahaya = (isGelap == LOW) ? "GELAP" : "TERIK";
+  String catUdara = (kelembapanUdara > 75.0) ? "LEMBAP" : (kelembapanUdara >= 50.0) ? "NORMAL" : "KERING";
+
+  Serial.print("Lampu : ");
+  Serial.println(catCahaya);
+
+
+
+
+  // --- HITUNG UNIT KELIPATAN DURATION SECARA LINIER ---
+  int step = baseDurasi / 12; 
+
+  int durasiSiram = 0; 
+  bool lampuNyala = false;
+  String triggerRule = "IDLE";
+
+  // --- INFERENSI SESUAI MATRIKS KEPUTUSAN GAMBAR EXCEL ---
+  
+  // ================= KATEGORI: SANGAT KERING =================
+  if (catTanah == "SANGAT_KERING") {
+    if (catSuhu == "SANGAT_PANAS" && catCahaya == "TERIK") {
+      if (catUdara == "KERING") { durasiSiram = 12 * step; triggerRule = "R1-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 10 * step; triggerRule = "R1-B"; }
+      else { durasiSiram = 8 * step; triggerRule = "R1-C"; }
+    }
+    else if (catSuhu == "PANAS" && catCahaya == "TERIK") {
+      if (catUdara == "KERING") { durasiSiram = 10 * step; triggerRule = "R2-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 8 * step; triggerRule = "R2-B"; }
+      else { durasiSiram = 6 * step; triggerRule = "R2-C"; }
+    }
+    else if (catSuhu == "NORMAL" && catCahaya == "GELAP") {
+      lampuNyala = true; 
+      if (catUdara == "KERING") { durasiSiram = 8 * step; triggerRule = "R3-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 6 * step; triggerRule = "R3-B"; }
+      else { durasiSiram = 4 * step; triggerRule = "R3-C"; }
+    }
+    else if (catSuhu == "PANAS" && catCahaya == "GELAP") {
+      if (catUdara == "KERING") { durasiSiram = 7 * step; triggerRule = "R4-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 5 * step; triggerRule = "R4-B"; }
+      else { durasiSiram = 3 * step; triggerRule = "R4-C"; }
+    }
+    else if (catSuhu == "DINGIN" && catCahaya == "GELAP") {
+      if (catUdara == "KERING") { durasiSiram = 4 * step; triggerRule = "R5-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 3 * step; triggerRule = "R5-B"; }
+      else { durasiSiram = 2 * step; triggerRule = "R5-C"; }
+    }
+    else { durasiSiram = 5 * step; triggerRule = "R_DEF_SK"; }
+  }
+  
+  // ================= KATEGORI: KERING =================
+  else if (catTanah == "KERING") {
+    if (catSuhu == "SANGAT_PANAS" && catCahaya == "TERIK") {
+      if (catUdara == "KERING") { durasiSiram = 10 * step; triggerRule = "R6-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 8 * step; triggerRule = "R6-B"; }
+      else { durasiSiram = 6 * step; triggerRule = "R6-C"; }
+    }
+    else if (catSuhu == "PANAS" && catCahaya == "TERIK") {
+      if (catUdara == "KERING") { durasiSiram = 8 * step; triggerRule = "R7-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 6 * step; triggerRule = "R7-B"; }
+      else { durasiSiram = 4 * step; triggerRule = "R7-C"; }
+    }
+    else if (catSuhu == "NORMAL" && catCahaya == "TERIK") {
+      if (catUdara == "KERING") { durasiSiram = 6 * step; triggerRule = "R8-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 5 * step; triggerRule = "R8-B"; }
+      else { durasiSiram = 3 * step; triggerRule = "R8-C"; }
+    }
+    else if (catSuhu == "NORMAL" && catCahaya == "GELAP") {
+      lampuNyala = true; 
+      if (catUdara == "KERING") { durasiSiram = 5 * step; triggerRule = "R9-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 4 * step; triggerRule = "R9-B"; }
+      else { durasiSiram = 2 * step; triggerRule = "R9-C"; }
+    }
+    else if (catSuhu == "DINGIN" && catCahaya == "GELAP") {
+      if (catUdara == "KERING") { durasiSiram = 3 * step; triggerRule = "R10-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 2 * step; triggerRule = "R10-B"; }
+      else { durasiSiram = 0; triggerRule = "R10-C"; } // Stop! Kelembapan udara tinggi + dingin memicu jamur
+    }
+    else { durasiSiram = 4 * step; triggerRule = "R_DEF_K"; }
+  }
+  
+  // ================= KATEGORI: LEMBAP =================
+  else if (catTanah == "LEMBAP") {
+    if (catSuhu == "SANGAT_PANAS" && catCahaya == "TERIK"){ 
+      if (catUdara == "KERING") { durasiSiram = 3 * step; triggerRule = "R11-A"; }
+      else if (catUdara == "NORMAL") { durasiSiram = 2 * step; triggerRule = "R11-B"; }
+      else { durasiSiram = 0; triggerRule = "R11-C"; }
+    } 
+    else if (catSuhu == "PANAS" && catCahaya == "TERIK") { durasiSiram = 0; triggerRule = "R12"; }
+    else if (catSuhu == "NORMAL" && catCahaya == "TERIK") { durasiSiram = 0; triggerRule = "R13"; }
+    else if (catSuhu == "NORMAL" && catCahaya == "GELAP") { durasiSiram = 0; lampuNyala = true; triggerRule = "R14"; }
+    else if (catSuhu == "DINGIN" && catCahaya == "GELAP") { durasiSiram = 0; triggerRule = "R15"; }
+    else { durasiSiram = 0; triggerRule = "R_DEF_L"; } 
+  }
+  
+  // ================= KATEGORI: BASAH & SANGAT BASAH =================
+  else if (catTanah == "BASAH") {
+    durasiSiram = 0; 
+    if (catSuhu == "SANGAT_PANAS" && catCahaya == "TERIK") triggerRule = "R16";
+    else if (catSuhu == "NORMAL" && catCahaya == "GELAP") { lampuNyala = true; triggerRule = "R17"; }
+    else if (catSuhu == "DINGIN" && catCahaya == "GELAP") triggerRule = "R18";
+    else triggerRule = "R_STOP_B";
+  }
+  else if (catTanah == "SANGAT_BASAH") {
+    durasiSiram = 0;
+    if (catSuhu == "PANAS" && catCahaya == "TERIK") triggerRule = "R19";
+    else if (catSuhu == "DINGIN" && catCahaya == "GELAP") triggerRule = "R20";
+    else triggerRule = "R_STOP_SB";
+  }
+
+  // --- EKSEKUSI HARDWARE ---
+  ruleTerakhir = triggerRule;
+  digitalWrite(RELAY_LAMPU, lampuNyala ? LOW : HIGH); 
+
+  if (durasiSiram > 0) {
+    Serial.println("FUZZY MATRIX PRO: " + triggerRule + " | Siram: " + String(durasiSiram) + "ms");
+    digitalWrite(RELAY_POMPA, HIGH); 
+    pompaSedangMenyiram = true;
+    durasiPompaAktif = durasiSiram;
+    waktuPompaMulai = millis();
+    waktuTerakhirKirim = 0; 
+  }
+}
+
+// ==========================================
+// 4. PENERIMA PERINTAH MQTT
+// ==========================================
+void callbackMQTT(char* topic, byte* payload, unsigned int length) {
+  String pesan = "";
+  for (int i = 0; i < length; i++) pesan += (char)payload[i];
+  Serial.println("Perintah Masuk: " + pesan);
+
+  if (pesan.startsWith("MODE:")) {
+    modeAuto = (pesan.substring(5) == "AUTO");
+    if (!modeAuto) pompaSedangMenyiram = false; 
+  }
+  else if (pesan.startsWith("PUMP:") && !modeAuto) {
+    if (pesan.substring(5) == "ON") digitalWrite(RELAY_POMPA, HIGH);
+    else digitalWrite(RELAY_POMPA, LOW);
+  }
+  else if (pesan.startsWith("LAMP:") && !modeAuto) {
+    if (pesan.substring(5) == "ON") digitalWrite(RELAY_LAMPU, LOW); 
+    else digitalWrite(RELAY_LAMPU, HIGH);
+  }
+  else if (pesan.startsWith("LIMIT:KERING:")) {
+    batasKering = pesan.substring(13).toInt(); 
+    preferences.begin("batas", false); preferences.putInt("kering", batasKering); preferences.end();
+  }
+  else if (pesan.startsWith("LIMIT:BASAH:")) {
+    batasBasah = pesan.substring(12).toInt(); 
+    preferences.begin("batas", false); preferences.putInt("basah", batasBasah); preferences.end();
+  }
+  else if (pesan.startsWith("COOLDOWN:")) {
+    LAMA_COOLDOWN = pesan.substring(9).toInt() * 1000;
+    preferences.begin("batas", false); preferences.putULong("cooldown", LAMA_COOLDOWN); preferences.end();
+  }
+  else if (pesan.startsWith("CAL:KERING:")) {
+    calKering = pesan.substring(11).toInt(); 
+    preferences.begin("batas", false); preferences.putInt("calKering", calKering); preferences.end();
+  }
+  else if (pesan.startsWith("CAL:BASAH:")) {
+    calBasah = pesan.substring(10).toInt(); 
+    preferences.begin("batas", false); preferences.putInt("calBasah", calBasah); preferences.end();
+  }
+  
+  // --- TELEKOMANDO BARU: KALIBRASI JANGKAR TUNGGAL ---
+  else if (pesan.startsWith("DURASI:BASE:")) {
+    baseDurasi = pesan.substring(12).toInt();
+    preferences.begin("batas", false); preferences.putInt("baseDurasi", baseDurasi); preferences.end();
+    Serial.println("✔ Kalibrasi Base Durasi Utama Diperbarui: " + String(baseDurasi) + " ms");
+  }
+  
+  else if (pesan.startsWith("CONFIG:")) {
+    preferences.begin("modul", false);
+    if(pesan.startsWith("CONFIG:WATER:")) preferences.putBool("air_on", (pesan.substring(13)=="ON"));
+    if(pesan.startsWith("CONFIG:SUHU:")) preferences.putBool("suhu_on", (pesan.substring(12)=="ON"));
+    preferences.end();
+    ESP.restart(); 
+  }
+  else if (pesan.startsWith("OTA:")) {
+    performOTA(pesan.substring(4));
+  }
+  waktuTerakhirKirim = 0; 
+}
+
+void reconnectMQTT() {
+  if (WiFi.status() == WL_CONNECTED && !client.connected()) {
+    if (client.connect(deviceID.c_str(), mqtt_user, mqtt_pass)) {
+      client.subscribe(topic_command.c_str());
+    }
+  }
+}
+
+// ==========================================
+// 5. SETUP UTAMA
+// ==========================================
+void setup() {
+  Serial.begin(9600);
+  pinMode(PIN_SOIL, INPUT); pinMode(PIN_LDR, INPUT);
+  pinMode(RELAY_POMPA, OUTPUT); pinMode(RELAY_LAMPU, OUTPUT);
+  pinMode(PIN_LED_BOARD, OUTPUT); pinMode(PIN_BOOT, INPUT_PULLUP); 
+
+  digitalWrite(RELAY_POMPA, LOW);  
+  digitalWrite(RELAY_LAMPU, HIGH); 
+
+  preferences.begin("modul", true);
+  modulAirAktif = preferences.getBool("air_on", false);
+  modulSuhuAktif = preferences.getBool("suhu_on", false);
+  preferences.end();
+
+  preferences.begin("batas", true);
+  batasKering = preferences.getInt("kering", 1725); 
+  batasBasah = preferences.getInt("basah", 1200);   
+  calKering = preferences.getInt("calKering", 2700); 
+  calBasah = preferences.getInt("calBasah", 1200);   
+  LAMA_COOLDOWN = preferences.getULong("cooldown", 60000); 
+  
+  // Load nilai tunggal jangkar kalibrasi
+  baseDurasi = preferences.getInt("baseDurasi", 12000);
+  preferences.end();
+
+  if (modulAirAktif) pinMode(PIN_WATER_LEVEL, INPUT);
+  if (modulSuhuAktif) dht.begin();
+
+  uint32_t chipId = 0;
+  for(int i=0; i<17; i=i+8) chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  deviceID = "PLANT-" + String(chipId, HEX);
+  deviceID.toUpperCase();
+  topic_telemetry = deviceID + "/telemetry";
+  topic_command = deviceID + "/cmd";
+
+  preferences.begin("kredensial", true); 
+  String savedSSID = preferences.getString("ssid", "");
+  String savedPass = preferences.getString("pass", "");
+  preferences.end();
+
+  if (savedSSID != "") {
+    WiFi.begin(savedSSID.c_str(), savedPass.c_str());
+    int timeout = 0;
+    while (WiFi.status() != WL_CONNECTED && timeout < 20) { delay(500); timeout++; }
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    modeBluetooth = false;
+    espClient.setInsecure(); 
+    client.setServer(mqtt_server, mqtt_port);
+    client.setCallback(callbackMQTT);
+    client.setBufferSize(512); 
+  } else {
+    modeBluetooth = true;
+    BLEDevice::init("SmartPlant-BLE");
+    BLEServer *pServer = BLEDevice::createServer();
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+    BLECharacteristic *pCharRX = pService->createCharacteristic(CHARACTERISTIC_UUID_RX, BLECharacteristic::PROPERTY_WRITE);
+    pCharRX->setCallbacks(new KendaliBluetooth()); 
+    pCharacteristicTX = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    pCharacteristicTX->addDescriptor(new BLE2902());
+    pService->start(); pServer->getAdvertising()->start();
+  }
+}
+
+// ==========================================
+// 6. MAIN LOOP & PIPELINE TELEMETRI
+// ==========================================
+void loop() {
+  if (isOtaRunning) return; 
+  unsigned long waktuSekarang = millis();
+
+  if (digitalRead(PIN_BOOT) == LOW) {
+    delay(3000); 
+    if (digitalRead(PIN_BOOT) == LOW) {
+      preferences.begin("kredensial", false); preferences.clear(); preferences.end();
+      preferences.begin("batas", false); preferences.clear(); preferences.end();
+      delay(1000); ESP.restart(); 
+    }
+  }
+
+  if (pompaSedangMenyiram) {
+    if (waktuSekarang - waktuPompaMulai >= durasiPompaAktif) {
+      digitalWrite(RELAY_POMPA, LOW); 
+      pompaSedangMenyiram = false;
+      sedangCooldown = true;
+      ruleTerakhir = "COOLDOWN";
+      waktuCooldownMulai = waktuSekarang;
+      waktuTerakhirKirim = 0; 
+    }
+  }
+
+  if (modeBluetooth) {
+    digitalWrite(PIN_LED_BOARD, HIGH); 
+  } 
+  else {
+    if (!client.connected()) {
+      reconnectMQTT();
+      digitalWrite(PIN_LED_BOARD, (waktuSekarang % 1000 < 500) ? HIGH : LOW);
+    } else {
+      digitalWrite(PIN_LED_BOARD, LOW); 
+    }
+    
+    client.loop(); 
+
+    if (waktuSekarang - waktuTerakhirCek >= 1000) {
+      waktuTerakhirCek = waktuSekarang;
+      prosesFuzzyLogic();
+    }
+
+    if (waktuSekarang - waktuTerakhirKirim >= 2000 && client.connected()) {
+      waktuTerakhirKirim = waktuSekarang;
+
+      float suhu = dht.readTemperature();
+      float kelembapanUdara = dht.readHumidity();
+      int air = modulAirAktif ? analogRead(PIN_WATER_LEVEL) : -1;
+
+      String jsonPayload = "{";
+      jsonPayload += "\"tanah\":" + String(bacaTanahRataRata()) + ",";
+      jsonPayload += "\"cahaya\":" + String(!digitalRead(PIN_LDR)) + ",";
+      jsonPayload += "\"pompa\":" + String(digitalRead(RELAY_POMPA)) + ",";
+      jsonPayload += "\"lampu\":" + String((digitalRead(RELAY_LAMPU) == LOW) ? 1 : 0) + ",";
+      jsonPayload += "\"mode\":\"" + String(modeAuto ? "AUTO" : "MANUAL") + "\",";
+      jsonPayload += "\"batasKering\":" + String(batasKering) + ",";
+      jsonPayload += "\"batasBasah\":" + String(batasBasah) + ",";
+      jsonPayload += "\"cooldown\":" + String(LAMA_COOLDOWN / 1000) + ",";
+      jsonPayload += "\"calKering\":" + String(calKering) + ",";
+      jsonPayload += "\"calBasah\":" + String(calBasah) + ",";
+      
+      // Kirim satu nilai jangkar kalibrasi ke dashboard website
+      jsonPayload += "\"baseDurasi\":" + String(baseDurasi) + ",";
+      jsonPayload += "\"durasiPompa\":" + String(durasiPompaAktif) + ","; 
+      
+      jsonPayload += "\"air\":" + String(air) + ",";
+      jsonPayload += "\"suhu\":" + (isnan(suhu) ? "-1" : String(suhu)) + ",";
+      jsonPayload += "\"humidity\":" + (isnan(kelembapanUdara) ? "-1" : String(kelembapanUdara)) + ","; 
+      jsonPayload += "\"version\":\"" + CURRENT_VERSION + "\","; 
+      jsonPayload += "\"rule\":\"" + ruleTerakhir + "\""; 
+      jsonPayload += "}";
+
+      client.publish(topic_telemetry.c_str(), jsonPayload.c_str());
+    }
+  }
+}

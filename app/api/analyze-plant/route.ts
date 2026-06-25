@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { deviceId, tanah, cahaya, pompa, lampu, mode, batasKering, batasBasah } = body;
+    const { deviceId, tanah, cahaya, pompa, lampu, mode, batasKering, batasBasah, aiModel } = body;
 
     // Check if the API key is set
     const apiKey = process.env.GEMINI_API_KEY;
@@ -17,22 +17,54 @@ export async function POST(req: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const modelName = aiModel || "gemini-2.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     // Fetch historical data
     let historicalContext = "";
+    let deviceName = "Tanaman (Tidak diketahui)";
+    
     if (deviceId) {
       try {
+        const device = await prisma.device.findUnique({
+          where: { id: String(deviceId) },
+          select: { namaAlias: true }
+        });
+        if (device) deviceName = device.namaAlias;
+
         const recentLogs = await prisma.sensorLog.findMany({
           where: { deviceId: String(deviceId) },
           orderBy: { createdAt: "desc" },
-          take: 10,
+          take: 5,
         });
+
+        const recentActions = await prisma.fuzzyActionLog.findMany({
+          where: { deviceId: String(deviceId) },
+          orderBy: { createdAt: "desc" },
+          take: 3,
+        });
+
+        const recentAlerts = await prisma.systemAlert.findMany({
+          where: { deviceId: String(deviceId) },
+          orderBy: { createdAt: "desc" },
+          take: 2,
+        });
+
+        historicalContext += `\n- Profil Tanaman: ${deviceName}`;
+        
         if (recentLogs.length > 0) {
-          historicalContext = `\n- Tren Historis (10 pembacaan terakhir, terbaru ke terlama): ${recentLogs.map((l: any) => `[Suhu: ${l.suhu}°C, Tanah: ${l.tanah}, Cahaya: ${l.cahaya}]`).join(", ")}`;
+          historicalContext += `\n- Tren Sensor (5 terakhir): ${recentLogs.map((l: any) => `[Suhu: ${l.suhu}°C, Tanah: ${l.tanah}, Cahaya: ${l.cahaya}]`).join(", ")}`;
+        }
+        
+        if (recentActions.length > 0) {
+          historicalContext += `\n- Riwayat Tindakan Otomatis (3 terakhir): ${recentActions.map((a: any) => `[Rule: ${a.kodeRule}, Pompa: ${a.durasiPompaMs}ms, UV: ${a.lampuNyala ? 'Ya' : 'Tidak'}]`).join(", ")}`;
+        }
+
+        if (recentAlerts.length > 0) {
+          historicalContext += `\n- Peringatan Sistem Terakhir: ${recentAlerts.map((a: any) => `[${a.tipe}: ${a.pesan}]`).join(", ")}`;
         }
       } catch (err) {
-        console.error("Gagal mengambil riwayat:", err);
+        console.error("Gagal mengambil riwayat DB:", err);
       }
     }
 
@@ -43,19 +75,24 @@ export async function POST(req: NextRequest) {
     const lampStatus = lampu === 1 ? "Menyala (UV Aktif)" : "Mati";
 
     const prompt = `
-Bertindaklah sebagai ahli botani (botanist) berpengalaman. Analisis kondisi tanaman saat ini berdasarkan data telemetry sensor IoT berikut:
-- Nilai Kelembapan Tanah: ${tanah} (Batas Kering: ${batasKering}, Batas Basah: ${batasBasah}, Status: ${moistureStatus})
-- Status Cahaya: ${cahaya} (${lightStatus})
-- Status Pompa: ${pompa} (${pumpStatus})
-- Status Lampu UV: ${lampu} (${lampStatus})
-- Mode Sistem: ${mode}${historicalContext}
+Bertindaklah sebagai Ahli Botani (Botanist) Senior dan Analis Sistem IoT. Analisis kondisi tanaman "${deviceName}" saat ini berdasarkan data telemetry dan database berikut:
 
-Persyaratan keluaran:
-1. Berikan analisis singkat tentang kesehatan tanaman saat ini dan rekomendasi tindakan/penyiraman selanjutnya. Jika ada tren historis, manfaatkan untuk analisis.
-2. Tuliskan dalam Bahasa Indonesia.
-3. Maksimal 2 kalimat pendek saja.
-4. Nada bicara santai namun ilmiah secara botani.
-5. Langsung berikan hasil analisisnya tanpa kata pengantar atau kalimat pembuka seperti "Berdasarkan data..." atau "Sebagai ahli botani...".
+DATA SAAT INI:
+- Kelembapan Tanah: ${tanah} (Batas Kering: ${batasKering}, Batas Basah: ${batasBasah}, Status: ${moistureStatus})
+- Cahaya: ${cahaya} (${lightStatus})
+- Pompa: ${pompa} (${pumpStatus})
+- Lampu UV: ${lampu} (${lampStatus})
+- Mode Sistem: ${mode}
+
+KONTEKS HISTORIS (Database):${historicalContext}
+
+PERSYARATAN KELUARAN (FORMAT MARKDOWN):
+1. **Status Kesehatan**: Berikan 1 kalimat penilaian singkat tentang kondisi keseluruhan tanaman.
+2. **Analisis Lingkungan**: Evaluasi singkat kelembapan tanah & cahaya (serta perhatikan tren historis jika ada).
+3. **Evaluasi Sistem IoT**: Nilai kinerja sistem otomatis (pompa/lampu) atau peringatan terakhir. Apakah bekerja sesuai kebutuhan tanaman?
+4. **Rekomendasi Praktis**: Langkah spesifik yang perlu dilakukan pengguna.
+
+Gunakan bahasa Indonesia yang profesional, ramah, dan ringkas. WAJIB gunakan format Markdown (Heading, Bullet list, Bold, Italic, atau Emoji yang elegan). Langsung berikan hasil tanpa kalimat basa-basi.
 `;
 
     const result = await model.generateContent(prompt);
@@ -64,9 +101,20 @@ Persyaratan keluaran:
     return NextResponse.json({ analysis: textResponse });
   } catch (error: any) {
     console.error("Gemini AI API Error:", error);
+    
+    let errorMessage = "Gagal melakukan analisis kondisi tanaman.";
+    let statusCode = 500;
+    
+    if (error.status === 429 || (error.message && (error.message.includes("429") || error.message.includes("Quota exceeded")))) {
+      errorMessage = "Kuota API Gemini (Free Tier) untuk model ini telah habis. Silakan gunakan model yang lebih ringan (misal: 2.5 Flash) atau coba lagi nanti.";
+      statusCode = 429;
+    } else {
+      errorMessage = error.message || errorMessage;
+    }
+
     return NextResponse.json(
-      { error: error.message || "Gagal melakukan analisis kondisi tanaman." },
-      { status: 500 }
+      { error: errorMessage },
+      { status: statusCode }
     );
   }
 }

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Brain, AlertTriangle, Loader2, Sparkles, Bot } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Brain, AlertTriangle, Loader2, Sparkles, Bot, Maximize2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -23,6 +24,12 @@ export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
   const [aiResult, setAiResult] = useState("");
   const [aiError, setAiError] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleAnalyzePlant = async () => {
     if (!telemetry) return;
@@ -66,6 +73,7 @@ export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
   };
 
   return (
+    <>
     <motion.div
       variants={itemVariants}
       className="flex flex-col h-full min-h-0 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden p-3"
@@ -210,6 +218,13 @@ export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
                       <div className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 tracking-wider uppercase flex items-center gap-1.5 border-b border-indigo-200/60 dark:border-indigo-500/20 pb-2">
                         <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                         Analisis & Rekomendasi AI
+                        <button
+                          onClick={() => setIsExpanded(true)}
+                          className="ml-auto p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-md transition-colors cursor-pointer"
+                          title="Perbesar"
+                        >
+                          <Maximize2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <div className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed pt-1">
                         <ReactMarkdown 
@@ -235,5 +250,57 @@ export default function AIAssistantCard({ telemetry }: AIAssistantCardProps) {
         )}
       </AnimatePresence>
     </motion.div>
+
+    {isMounted && createPortal(
+      <AnimatePresence>
+        {isExpanded && aiResult && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+            onClick={() => setIsExpanded(false)}
+          >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-2 font-bold text-indigo-700 dark:text-indigo-400">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                Analisis & Rekomendasi AI
+              </div>
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto custom-scrollbar text-sm text-slate-700 dark:text-slate-300">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  strong: ({node, ...props}) => <strong className="font-bold text-indigo-900 dark:text-indigo-300" {...props} />,
+                  p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                  ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-3 space-y-2 text-slate-600 dark:text-slate-400 marker:text-indigo-400" {...props} />,
+                  ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-3 space-y-2 text-slate-600 dark:text-slate-400 marker:text-indigo-400" {...props} />,
+                  li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="font-bold text-indigo-800 dark:text-indigo-300 text-sm mt-4 mb-2 flex items-center gap-1.5" {...props} />
+                }}
+              >
+                {aiResult}
+              </ReactMarkdown>
+            </div>
+          </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>,
+      document.body
+    )}
+    </>
   );
 }

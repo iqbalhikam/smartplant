@@ -24,3 +24,9 @@ export interface MQTTConfig {
   username: string;
   password?: string;
 }
+
+export type WidgetVariant = 'default' | 'minimal' | 'glassmorphism' | 'solid' | 'neon' | 'neobrutalism' | 'neumorphism' | 'gauge' | 'large';
+
+export interface BaseWidgetProps {
+  variant?: WidgetVariant;
+}

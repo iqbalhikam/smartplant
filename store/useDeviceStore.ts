@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 export interface WidgetLayout {
   id: string;
   type: string;
+  variant?: string;
   x: number;
   y: number;
   w: number;
@@ -25,10 +26,15 @@ interface DeviceStore {
   setActivePage: (page: string) => void;
 
   layouts: Record<string, WidgetLayout[]>;
-  addWidget: (page: string, type: string, x?: number, y?: number, w?: number, h?: number) => void;
+  addWidget: (page: string, type: string, variant?: string, x?: number, y?: number, w?: number, h?: number) => void;
   removeWidget: (page: string, id: string) => void;
   updateLayout: (page: string, layout: { i: string; x: number; y: number; w: number; h: number }[]) => void;
   resetLayout: (page: string) => void;
+  updateWidgetVariant: (page: string, id: string, variant: string) => void;
+  setGlobalVariant: (variant: string) => void;
+
+  themeColor: string;
+  setThemeColor: (color: string) => void;
 }
 
 const DEFAULT_LAYOUTS: Record<string, WidgetLayout[]> = {
@@ -72,15 +78,18 @@ export const useDeviceStore = create<DeviceStore>()(
       activePage: "dashboard",
       setActivePage: (page) => set({ activePage: page }),
 
+      themeColor: "emerald", // Default theme color
+      setThemeColor: (color) => set({ themeColor: color }),
+
       layouts: DEFAULT_LAYOUTS,
       
-      addWidget: (page, type, x = 0, y = Infinity, w = 4, h = 2) => set((state) => {
-        const id = `${type}-${Date.now()}`;
+      addWidget: (page, type, variant = "default", x = 0, y = Infinity, w = 4, h = 2) => set((state) => {
+        const id = `${type}-${variant}-${Date.now()}`;
         const pageLayout = state.layouts[page] || [];
         return {
           layouts: {
             ...state.layouts,
-            [page]: [...pageLayout, { id, type, x, y, w, h }]
+            [page]: [...pageLayout, { id, type, variant, x, y, w, h }]
           }
         };
       }),
@@ -110,6 +119,30 @@ export const useDeviceStore = create<DeviceStore>()(
             [page]: newWidgets
           }
         };
+      }),
+      
+      updateWidgetVariant: (page, id, variant) => set((state) => {
+        const pageLayout = state.layouts[page] || [];
+        const newWidgets = pageLayout.map(widget => {
+          if (widget.id === id) {
+            return { ...widget, variant };
+          }
+          return widget;
+        });
+        return {
+          layouts: {
+            ...state.layouts,
+            [page]: newWidgets
+          }
+        };
+      }),
+      
+      setGlobalVariant: (variant) => set((state) => {
+        const newLayouts: Record<string, WidgetLayout[]> = {};
+        Object.keys(state.layouts).forEach(page => {
+          newLayouts[page] = state.layouts[page].map(widget => ({ ...widget, variant }));
+        });
+        return { layouts: newLayouts };
       }),
       
       resetLayout: (page) => set((state) => ({

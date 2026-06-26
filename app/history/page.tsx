@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { WidgetVariant } from "../../types";
 import { useDeviceStore } from "../../store/useDeviceStore";
 import { Loader2, RefreshCw, History } from "lucide-react";
 import SharedGridLayout from "../../components/SharedGridLayout";
@@ -88,12 +89,13 @@ export default function HistoryPage() {
     );
   }
 
-  const renderWidget = (type: string) => {
+  const renderWidget = (type: string, variant?: string) => {
+    const v = variant as WidgetVariant;
     switch (type) {
       case "history-sensor": 
-        return <HistorySensorWidget isLoading={isLoading} sensorLogs={sensorLogs} chartData={sensorChartData} />;
+        return <HistorySensorWidget isLoading={isLoading} sensorLogs={sensorLogs} chartData={sensorChartData} variant={v} />;
       case "history-action": 
-        return <HistoryActionWidget isLoading={isLoading} actionLogs={actionLogs} chartData={actionChartData} />;
+        return <HistoryActionWidget isLoading={isLoading} actionLogs={actionLogs} chartData={actionChartData} variant={v} />;
       default: 
         return null;
     }

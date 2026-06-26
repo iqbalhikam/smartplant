@@ -51,7 +51,7 @@ export default function DeviceSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-sm font-semibold transition-all duration-300 border border-teal-500/20 bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 active:scale-95 cursor-pointer backdrop-blur-md"
+        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-sm font-semibold transition-all duration-300 border border-primary/20 bg-primary/10 text-primary dark:text-secondary hover:bg-primary/20 active:scale-95 cursor-pointer backdrop-blur-md"
       >
         <Cpu className="w-4 h-4" />
         <span className="hidden sm:inline-block truncate max-w-[120px]">
@@ -66,7 +66,7 @@ export default function DeviceSelector() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden backdrop-blur-xl">
+          <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-50 overflow-hidden backdrop-blur-xl">
             <div className="max-h-60 overflow-y-auto p-1">
               {devices.map((device) => (
                 <button
@@ -77,14 +77,14 @@ export default function DeviceSelector() {
                   }}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeDeviceId === device.id
-                      ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold"
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      ? "bg-primary/10 text-primary dark:text-secondary font-semibold"
+                      : "text-text-primary hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span>{device.namaAlias}</span>
                     {device.status === "ONLINE" && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="w-2 h-2 rounded-full bg-primary" />
                     )}
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono mt-0.5">{device.id}</div>

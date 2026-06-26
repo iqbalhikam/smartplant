@@ -16,13 +16,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { SmartPlantData } from "../types";
+import { SmartPlantData, WidgetVariant } from "../types";
 
 interface SystemSettingsCardProps {
   publishCommand: (command: string) => void;
   telemetry: SmartPlantData;
   otaLogs?: string[];
   clearOtaLogs?: () => void;
+  variant?: WidgetVariant;
 }
 
 const GITHUB_REPO = "iqbalhikam/smartplant-firmware";
@@ -53,9 +54,9 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
         <div className={`p-2 shrink-0 ${iconBg} rounded-xl ${isComingSoon ? "grayscale" : ""}`}>{icon}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5 xl:gap-2">
-            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{label}</p>
+            <p className="text-xs font-bold text-text-primary truncate">{label}</p>
             {isComingSoon && (
-              <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider bg-violet-500/15 border border-violet-500/30 text-violet-400 whitespace-nowrap">
+              <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider bg-primary/15 border border-primary/30 text-secondary whitespace-nowrap">
                 Segera Hadir
               </span>
             )}
@@ -90,7 +91,7 @@ function ToggleRow({ label, description, icon, iconBg, enabled, accentColor, onT
 
 type OtaInstallStatus = "idle" | "confirming" | "installing" | "sent";
 
-export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs = [], clearOtaLogs }: SystemSettingsCardProps) {
+export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs = [], clearOtaLogs, variant }: SystemSettingsCardProps) {
   const [waterTankEnabled, setWaterTankEnabled] = useState(false);
 
   // GitHub release state
@@ -200,20 +201,16 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
   };
 
   const handleInstallCancel = () => setOtaInstallStatus("idle");
-
-  return (
-    <motion.div
-      variants={itemVariants}
-      className="h-full flex flex-col bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 overflow-hidden"
-    >
+  const settingsContent = (
+    <>
       {/* Header */}
-      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3 border-b border-slate-200 dark:border-slate-800/60">
-        <div className="p-2 bg-teal-500/10 border border-teal-500/20 rounded-xl">
-          <Settings className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+      <div className="flex items-center gap-2.5 px-4 pt-4 pb-3 border-b border-border">
+        <div className="p-2 bg-primary/10 border border-primary/20 rounded-xl">
+          <Settings className="w-4 h-4 text-primary dark:text-secondary" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-200 tracking-wide text-sm">Pengaturan Sistem</h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400">Konfigurasi modul perangkat keras IoT</p>
+          <h3 className="font-bold text-text-primary tracking-wide text-sm">Pengaturan Sistem</h3>
+          <p className="text-[10px] text-text-secondary">Konfigurasi modul perangkat keras IoT</p>
         </div>
       </div>
 
@@ -224,15 +221,15 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
           <ToggleRow
             label="Modul Tangki Air"
             description={waterTankEnabled ? "Monitoring level air aktif" : "Modul dinonaktifkan"}
-            icon={<Droplets className="w-4 h-4 text-sky-400" />}
-            iconBg="bg-sky-500/10 border border-sky-500/20"
+            icon={<Droplets className="w-4 h-4 text-secondary" />}
+            iconBg="bg-primary/10 border border-primary/20"
             enabled={waterTankEnabled}
-            accentColor="bg-sky-500"
+            accentColor="bg-primary"
             onToggle={handleWaterToggle}
           />
           {!waterTankEnabled && (
-            <div className="mt-1 p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl">
-              <p className="text-[10px] font-medium text-sky-600 dark:text-sky-400 leading-relaxed">
+            <div className="mt-1 p-3 bg-primary/10 border border-primary/20 rounded-xl">
+              <p className="text-[10px] font-medium text-primary dark:text-secondary leading-relaxed">
                 🚰 Modul Tangki Air Dinonaktifkan. Pastikan sensor Water Level sudah dihubungkan ke <strong>Pin 32</strong> sebelum mengaktifkan fitur ini agar tidak terjadi auto-stop (False Alarm).
               </p>
             </div>
@@ -241,17 +238,17 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
 
         <div className="flex items-center justify-between gap-4 py-3 border-b border-slate-800/60">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="p-2 shrink-0 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-              <Thermometer className="w-4 h-4 text-orange-400" />
+            <div className="p-2 shrink-0 bg-primary/10 border border-primary/20 rounded-xl">
+              <Thermometer className="w-4 h-4 text-secondary" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Modul Sensor Suhu & Udara</p>
+              <p className="text-xs font-bold text-text-primary truncate">Modul Sensor Suhu & Udara</p>
               {telemetry.suhu !== undefined && telemetry.suhu >= 0 ? (
-                <p className="text-[10px] text-emerald-500 dark:text-emerald-400 font-medium mt-0.5">
+                <p className="text-[10px] text-primary dark:text-secondary font-medium mt-0.5">
                   ✅ Sensor Aktif & Terdeteksi.
                 </p>
               ) : (
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 leading-relaxed">
+                <p className="text-[10px] text-text-secondary font-medium mt-0.5 leading-relaxed">
                   💡 Sensor tidak terdeteksi. Hubungkan DHT11 ke Pin 15 untuk mengaktifkan otomatis.
                 </p>
               )}
@@ -261,12 +258,12 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
       </div>
 
       {/* OTA Update Section */}
-      <div className="mx-4 mb-4 p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 rounded-xl space-y-3">
+      <div className="mx-4 mb-4 p-3 bg-background border border-border rounded-xl space-y-3">
         {/* OTA Section header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <Zap className="w-3.5 h-3.5 text-primary dark:text-secondary" />
+            <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
               Pembaruan Firmware (OTA)
             </span>
           </div>
@@ -281,14 +278,14 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
         </div>
 
         {/* Version row */}
-        <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/40 rounded-xl px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 border border-border rounded-xl px-3 py-2.5">
           <div className="flex items-center gap-2 shrink-0">
             <Cpu className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Versi Alat:</span>
+            <span className="text-[10px] text-text-secondary font-medium whitespace-nowrap">Versi Alat:</span>
           </div>
           <span className={`font-mono text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md truncate ${
             deviceVersion
-              ? "text-teal-600 dark:text-teal-400 bg-teal-500/10"
+              ? "text-primary dark:text-secondary bg-primary/10"
               : "text-slate-500 bg-slate-200 dark:bg-slate-800/60 animate-pulse"
           }`}>
             {deviceVersion ?? "Mendeteksi..."}
@@ -319,10 +316,10 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg"
+              className="flex items-center gap-2 p-2.5 bg-primary/10 border border-primary/20 rounded-lg"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <p className="text-[10px] text-emerald-300 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-secondary shrink-0" />
+              <p className="text-[10px] text-secondary font-medium">
                 Sistem Up-to-Date
                 {deviceVersion ? ` (Versi: ${deviceVersion})` : ""}
               </p>
@@ -338,7 +335,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               exit={{ opacity: 0 }}
               className="space-y-2.5"
             >
-              <div className="flex items-start gap-2 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-lg">
+              <div className="flex items-start gap-2 p-2.5 bg-warning/10 border border-warning/25 rounded-lg">
                 <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
                 <p className="text-[10px] text-amber-300 font-semibold leading-relaxed">
                   Update Firmware Tersedia: <span className="font-mono">{latestVersion}</span>!
@@ -346,7 +343,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               </div>
               <button
                 onClick={handleInstallClick}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-violet-500/15 active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-br from-secondary to-primary hover:from-primary hover:to-primary text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-primary/15 active:scale-95 cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Install Update Sekarang
@@ -363,7 +360,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               exit={{ opacity: 0, y: -4 }}
               className="space-y-2.5"
             >
-              <div className="flex items-start gap-2 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <div className="flex items-start gap-2 p-2.5 bg-warning/10 border border-warning/20 rounded-lg">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-amber-300 font-medium leading-relaxed">
                   Alat akan restart otomatis saat update berjalan. Pastikan pompa dalam kondisi mati sebelum melanjutkan.
@@ -372,13 +369,13 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               <div className="flex gap-2">
                 <button
                   onClick={handleInstallCancel}
-                  className="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95"
+                  className="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-border text-text-primary rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleInstallClick}
-                  className="flex-1 py-2 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
+                  className="flex-1 py-2 bg-gradient-to-br from-secondary to-primary hover:from-amber-600 hover:to-primary text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-warning/20 cursor-pointer active:scale-95"
                 >
                   Ya, Install Sekarang!
                 </button>
@@ -393,7 +390,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center justify-center gap-2.5 py-2.5 text-violet-300"
+              className="flex items-center justify-center gap-2.5 py-2.5 text-secondary"
             >
               <Loader2 className="w-4 h-4 animate-spin" />
               <span className="text-xs font-semibold animate-pulse">Mengirim perintah OTA ke alat...</span>
@@ -410,24 +407,24 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               className="space-y-2.5"
             >
               {/* Success banner */}
-              <div className="flex items-center gap-2.5 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-2.5 p-3 bg-primary/10 border border-primary/20 rounded-xl">
+                <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
                 <div>
-                  <p className="text-[11px] font-bold text-emerald-300">Perintah OTA Terkirim!</p>
+                  <p className="text-[11px] font-bold text-secondary">Perintah OTA Terkirim!</p>
                   <p className="text-[10px] text-slate-400">
                     Menunggu log progress dari alat via topik{" "}
-                    <span className="font-mono text-teal-400">/ota</span>...
+                    <span className="font-mono text-secondary">/ota</span>...
                   </p>
                 </div>
               </div>
 
               {/* Terminal log panel */}
-              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden">
+              <div className="bg-background border border-border rounded-xl overflow-hidden">
                 {/* Title bar */}
-                <div className="flex items-center gap-1.5 px-3 py-2 border-b border-slate-200 dark:border-slate-800/60 bg-slate-100 dark:bg-slate-900/60">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+                <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border bg-slate-100 dark:bg-slate-900/60">
+                  <span className="w-2.5 h-2.5 rounded-full bg-danger/70" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning/70" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary/70" />
                   <span className="ml-2 text-[10px] font-mono text-slate-500 tracking-wider">
                     {latestVersion || "OTA"} — progress log
                   </span>
@@ -463,9 +460,9 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
                             isError
                               ? "text-rose-400"
                               : isSuccess
-                              ? "text-emerald-400"
+                              ? "text-secondary"
                               : isProgress
-                              ? "text-violet-400"
+                              ? "text-secondary"
                               : "text-slate-400"
                           }`}
                         >
@@ -483,6 +480,81 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
         </AnimatePresence>
       </div>
       </div>
+    </>
+  );
+
+  const renderContent = () => {
+    if (variant === "minimal") {
+      return (
+        <div className="bg-transparent border-l-4 border-slate-500 pl-4 py-2 flex flex-col h-full pointer-events-auto relative">
+          {settingsContent}
+        </div>
+      );
+    }
+
+    if (variant === "glassmorphism") {
+      return (
+        <div className="bg-surface backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] h-full flex flex-col relative overflow-hidden pointer-events-auto">
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-slate-500/20 blur-2xl"></div>
+          <div className="flex-1 flex flex-col relative z-10">
+            {settingsContent}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "solid") {
+      return (
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-xl h-full flex flex-col relative overflow-hidden pointer-events-auto">
+          <div className="flex-1 flex flex-col relative z-10">
+            {settingsContent}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "neon") {
+      return (
+        <div className="bg-background border border-slate-500/50 rounded-xl flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(100,116,139,0.3),inset_0_0_20px_rgba(100,116,139,0.1)] pointer-events-auto">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
+          <div className="flex-1 flex flex-col relative z-10">
+            {settingsContent}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "neobrutalism") {
+      return (
+        <div className="border-4 border-black rounded-xl flex flex-col h-full shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-surface pointer-events-auto">
+          <div className="flex-1 flex flex-col relative">
+            {settingsContent}
+          </div>
+        </div>
+      );
+    }
+
+    if (variant === "neumorphism") {
+      return (
+        <div className="bg-[#e0e5ec] dark:bg-slate-800 rounded-3xl flex flex-col h-full shadow-[9px_9px_16px_rgb(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] dark:shadow-[8px_8px_16px_rgba(0,0,0,0.4),-8px_-8px_16px_rgba(255,255,255,0.05)] border-none pointer-events-auto overflow-hidden">
+          <div className="flex-1 flex flex-col relative">
+            {settingsContent}
+          </div>
+        </div>
+      );
+    }
+
+    // Default UI
+    return (
+      <div className="h-full flex flex-col bg-surface border border-border backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 overflow-hidden pointer-events-auto">
+        {settingsContent}
+      </div>
+    );
+  };
+
+  return (
+    <motion.div variants={itemVariants} className="h-full">
+      {renderContent()}
     </motion.div>
   );
 }

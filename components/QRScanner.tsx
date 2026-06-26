@@ -66,34 +66,34 @@ export default function QRScanner({ onScanSuccess, onClose }: QRScannerProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background backdrop-blur-md p-4"
     >
       <motion.div
         initial={{ scale: 0.95, y: 15, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.95, y: 15, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 350 }}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
+        className="bg-surface border border-border rounded-3xl p-6 max-w-sm w-full shadow-2xl relative"
       >
         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center gap-2">
-          <QrCode className="w-5 h-5 text-teal-500 dark:text-teal-400 animate-pulse" />
+          <QrCode className="w-5 h-5 text-primary dark:text-secondary animate-pulse" />
           Pindai QR Code
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+        <p className="text-xs text-text-secondary mb-5 leading-relaxed">
           Dekatkan QR Code pada kamera. Sistem akan memproses otomatis setelah kode terdeteksi.
         </p>
 
-        <div className="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 aspect-square flex items-center justify-center">
+        <div className="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-background border border-border aspect-square flex items-center justify-center">
           <div id={regionId} className="w-full h-full" />
           <div className="absolute inset-0 border-40 border-white/70 dark:border-slate-950/70 pointer-events-none flex items-center justify-center">
-            <div className="w-[160px] h-[160px] border-2 border-dashed border-teal-500 dark:border-teal-400 rounded-lg animate-pulse" />
+            <div className="w-[160px] h-[160px] border-2 border-dashed border-primary dark:border-secondary rounded-lg animate-pulse" />
           </div>
         </div>
 
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700/60 hover:text-slate-900 dark:hover:text-white py-3 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 active:scale-95 cursor-pointer"
+          className="mt-6 w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-border hover:text-slate-900 dark:hover:text-white py-3 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 active:scale-95 cursor-pointer"
         >
           BATALKAN
         </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { WidgetVariant } from "../types";
 import { useMQTTContext } from "../components/MQTTProvider";
 import SharedGridLayout from "../components/SharedGridLayout";
 
@@ -33,15 +34,16 @@ export default function SmartPlantCareDashboard() {
     );
   }
 
-  const renderWidget = (type: string) => {
+  const renderWidget = (type: string, variant?: string) => {
+    const v = variant as WidgetVariant;
     switch (type) {
-      case "ai-status": return <AIFuzzyStatusCard telemetry={telemetry} />;
-      case "kontrol": return <ControlsCard telemetry={telemetry} publishCommand={publishCommand} />;
-      case "riwayat": return <HistoryCard />;
-      case "ekosistem": return <SoilMoistureCard telemetry={telemetry} />;
-      case "cahaya": return <LightSensorCard telemetry={telemetry} />;
-      case "ai-assistant": return <AIAssistantCard telemetry={telemetry} />;
-      case "clock": return <ClockWidget />;
+      case "ai-status": return <AIFuzzyStatusCard telemetry={telemetry} variant={v} />;
+      case "kontrol": return <ControlsCard telemetry={telemetry} publishCommand={publishCommand} variant={v} />;
+      case "riwayat": return <HistoryCard variant={v} />;
+      case "ekosistem": return <SoilMoistureCard telemetry={telemetry} variant={v} />;
+      case "cahaya": return <LightSensorCard telemetry={telemetry} variant={v} />;
+      case "ai-assistant": return <AIAssistantCard telemetry={telemetry} variant={v} />;
+      case "clock": return <ClockWidget variant={v} />;
       default: return null;
     }
   };

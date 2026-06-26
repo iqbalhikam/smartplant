@@ -16,7 +16,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface SharedGridLayoutProps {
   pageName: string;
-  renderWidget: (type: string) => React.ReactNode;
+  renderWidget: (type: string, variant?: string) => React.ReactNode;
 }
 
 export default function SharedGridLayout({ pageName, renderWidget }: SharedGridLayoutProps) {
@@ -32,7 +32,7 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
     return (
       <div className="grid grid-cols-1 gap-6 p-4">
         <div className="text-center py-6">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500" />
+          <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
           <p className="text-xs text-slate-500">Memuat antarmuka...</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
       >
         {isEditMode && (
           <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg flex items-center justify-between">
-            <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">Mode Tata Letak Aktif. Anda dapat menggeser dan mengubah ukuran widget.</p>
+            <p className="text-sm text-indigo-700 dark:text-secondary font-medium">Mode Tata Letak Aktif. Anda dapat menggeser dan mengubah ukuran widget.</p>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => {
@@ -93,7 +93,7 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
               </button>
               <button 
                 onClick={() => setIsEditMode(false)}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-indigo-700 rounded-md transition-colors shadow-sm"
               >
                 <Save className="w-3.5 h-3.5" />
                 Simpan
@@ -126,7 +126,7 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
             <div 
               key={widget.id} 
               data-grid={{ x: widget.x, y: widget.y, w: widget.w, h: widget.h, minW: 2, minH: 2 }}
-              className={`h-full min-h-0 flex flex-col relative bg-transparent ${isEditMode ? "ring-2 ring-indigo-400 border-dashed border-2 border-transparent rounded-2xl" : ""}`}
+              className={`h-full min-h-0 flex flex-col relative bg-transparent ${isEditMode ? "ring-2 ring-secondary border-dashed border-2 border-transparent rounded-2xl" : ""}`}
             >
               <WidgetContextMenu widgetId={widget.id}>
                 {/* Drag Handle */}
@@ -137,14 +137,14 @@ export default function SharedGridLayout({ pageName, renderWidget }: SharedGridL
                 )}
                 
                 <div className="w-full h-full min-h-0 flex flex-col pointer-events-auto">
-                  {renderWidget(widget.type)}
+                  {renderWidget(widget.type, widget.variant)}
                 </div>
               </WidgetContextMenu>
             </div>
           ))}
         </ResponsiveGridLayout>
 
-        <WidgetSelectorModal />
+        <WidgetSelectorModal renderWidget={renderWidget} />
       </div>
     </DashboardContextMenu>
   );

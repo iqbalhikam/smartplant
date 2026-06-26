@@ -88,7 +88,7 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <button
@@ -111,16 +111,16 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
                 transition={{ duration: 0.3 }}
                 className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center"
               >
-                <div className="w-20 h-20 rounded-2xl bg-teal-500/10 border-2 border-teal-500/20 flex items-center justify-center mb-6">
-                  <Sparkles className="w-10 h-10 text-teal-500 animate-pulse" />
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-6">
+                  <Sparkles className="w-10 h-10 text-primary animate-pulse" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-3">Kalibrasi Cerdas</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+                <p className="text-sm text-text-secondary mb-8 leading-relaxed">
                   Sesuaikan sensor dengan lingkungan nyata agar persentase kelembapan (0-100%) dan kecerdasan AI bekerja 100% akurat. Data kalibrasi akan disimpan secara permanen di dalam memori perangkat ESP32.
                 </p>
                 <button
                   onClick={handleNext}
-                  className="w-full py-3.5 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-teal-500/30 transition-all active:scale-95"
+                  className="w-full py-3.5 bg-primary hover:bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 transition-all active:scale-95"
                 >
                   Mulai Kalibrasi
                 </button>
@@ -139,22 +139,22 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
                 className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-20 h-20 rounded-full bg-amber-50 dark:bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-center mb-6">
-                    <Wind className="w-10 h-10 text-amber-500" />
+                  <div className="absolute inset-0 bg-warning/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-20 h-20 rounded-full bg-amber-50 dark:bg-warning/10 border-2 border-warning/30 flex items-center justify-center mb-6">
+                    <Wind className="w-10 h-10 text-warning" />
                   </div>
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Langkah 1: Batas Kering</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 px-4">
+                <p className="text-xs text-text-secondary mb-6 px-4">
                   Angkat sensor dari tanah, lap perlahan hingga benar-benar kering. Biarkan di udara terbuka.
                 </p>
                 
                 <div className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 border border-slate-200 dark:border-slate-700">
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <div className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-warning animate-ping" />
                     Membaca Sensor...
                   </div>
-                  <div className="text-5xl font-mono font-black text-slate-800 dark:text-slate-200">
+                  <div className="text-5xl font-mono font-black text-text-primary">
                     {telemetry.tanah}
                   </div>
                   <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 font-medium">Tunggu hingga angka berhenti bergerak...</p>
@@ -162,7 +162,7 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
 
                 <button
                   onClick={lockDryValue}
-                  className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/30 transition-all active:scale-95"
+                  className="w-full py-3.5 bg-warning hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-warning/30 transition-all active:scale-95"
                 >
                   Kunci Nilai Kering
                 </button>
@@ -181,30 +181,30 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
                 className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-500/30 flex items-center justify-center mb-6">
-                    <Droplet className="w-10 h-10 text-blue-500" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-20 h-20 rounded-full bg-blue-50 dark:bg-primary/10 border-2 border-primary/30 flex items-center justify-center mb-6">
+                    <Droplet className="w-10 h-10 text-primary" />
                   </div>
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Langkah 2: Batas Basah</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 px-4">
+                <p className="text-xs text-text-secondary mb-6 px-4">
                   Siapkan segelas air. Celupkan sensor ke dalam air hingga sebatas garis aman (jangan sampai kena mesin atasnya).
                 </p>
                 
                 <div className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 border border-slate-200 dark:border-slate-700">
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                  <div className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
                     Membaca Sensor...
                   </div>
-                  <div className="text-5xl font-mono font-black text-slate-800 dark:text-slate-200">
+                  <div className="text-5xl font-mono font-black text-text-primary">
                     {telemetry.tanah}
                   </div>
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-2 font-medium">Tunggu hingga angka stabil & turun drastis.</p>
+                  <p className="text-[10px] text-primary dark:text-secondary mt-2 font-medium">Tunggu hingga angka stabil & turun drastis.</p>
                 </div>
 
                 <button
                   onClick={lockWetValue}
-                  className="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+                  className="w-full py-3.5 bg-primary hover:bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 transition-all active:scale-95"
                 >
                   Kunci Nilai Basah
                 </button>
@@ -226,30 +226,30 @@ export default function CalibrationWizardModal({ isOpen, onClose, telemetry, pub
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                  className="w-24 h-24 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center mb-6"
+                  className="w-24 h-24 rounded-full bg-primary/10 border-4 border-primary/20 flex items-center justify-center mb-6"
                 >
-                  <CheckCircle className="w-12 h-12 text-emerald-500" />
+                  <CheckCircle className="w-12 h-12 text-primary" />
                 </motion.div>
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Berhasil Dikalibrasi!</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                <p className="text-sm text-text-secondary mb-6">
                   Sensor siap digunakan dengan akurasi maksimal.
                 </p>
                 
                 <div className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-200 dark:border-slate-700 flex justify-around">
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Kering Maksimal</p>
-                    <p className="font-mono text-lg font-bold text-amber-500">{tempKering}</p>
+                    <p className="font-mono text-lg font-bold text-warning">{tempKering}</p>
                   </div>
                   <div className="w-px bg-slate-200 dark:bg-slate-700" />
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Basah Maksimal</p>
-                    <p className="font-mono text-lg font-bold text-blue-500">{tempBasah}</p>
+                    <p className="font-mono text-lg font-bold text-primary">{tempBasah}</p>
                   </div>
                 </div>
 
                 <button
                   onClick={saveAndApply}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
+                  className="w-full py-3.5 bg-primary hover:bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 transition-all active:scale-95"
                 >
                   Simpan ke Perangkat
                 </button>

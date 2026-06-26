@@ -7,9 +7,45 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@layer base {
+  /* Tema Terang: Zen Minimalist (Bersih, Mewah, Profesional) */
+  :root {
+    --background: #F4F7F6;
+    --surface: #FFFFFF;
+    --primary: #115E59; /* Emerald gelap yang sangat elegan */
+    --secondary: #10B981; /* Aksen hijau cerah untuk hover/aktif */
+    --border: #E5EBE9;
+    --text-primary: #1E293B; /* Slate pekat, lebih lembut di mata dari hitam murni */
+    --text-secondary: #64748B;
+    --warning: #F59E0B; /* Amber modern */
+    --danger: #F43F5E; /* Rose red, terlihat lebih premium dari merah standar */
+  }
+
+  /* Tema Gelap: Cyber Botanical (Futuristik, OLED-friendly, 'Hacker' Vibe) */
+  .dark {
+    --background: #0B0F0E; /* Hitam pekat dengan bayangan hijau hutan */
+    --surface: #141A18; /* Permukaan kartu yang sedikit lebih terang untuk hierarki */
+    --primary: #00DC82; /* Neon Mint, akan sangat 'pop' dan keren untuk indikator aktif */
+    --secondary: #059669; /* Emerald redup untuk elemen sekunder */
+    --border: #222B27; /* Garis pemisah yang sangat subtil */
+    --text-primary: #F8FAFC; /* Putih es */
+    --text-secondary: #94A3B8;
+    --warning: #FBBF24;
+    --danger: #FB7185;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

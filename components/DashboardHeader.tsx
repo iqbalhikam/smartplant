@@ -26,18 +26,18 @@ export default function DashboardHeader({
         <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-white/5 p-0.5 border border-slate-200 dark:border-transparent">
           <Image src="/image/LOGO.png" alt="SmartPlantCare Logo" fill sizes="32px" priority className="object-contain" />
         </div>
-        <h1 className="text-lg font-extrabold tracking-tight bg-linear-to-r from-teal-600 via-emerald-600 to-indigo-600 dark:from-teal-200 dark:via-emerald-200 dark:to-indigo-100 bg-clip-text text-transparent hidden sm:block">
+        <h1 className="text-lg font-extrabold tracking-tight bg-linear-to-r from-primary via-primary to-primary dark:from-teal-200 dark:via-emerald-200 dark:to-indigo-100 bg-clip-text text-transparent hidden sm:block">
           SmartPlantCare
         </h1>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
         {/* Navigation */}
-        <nav className="flex items-center gap-1 mr-1 sm:mr-2 border-r border-slate-300 dark:border-slate-700 pr-1 sm:pr-2">
+        <nav className="flex items-center gap-1 mr-1 sm:mr-2 border-r border-border pr-1 sm:pr-2">
           <Link
             href="/"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/" ? "bg-teal-500 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
             title="Dashboard"
           >
@@ -46,7 +46,7 @@ export default function DashboardHeader({
           <Link
             href="/history"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/history" ? "bg-teal-500 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/history" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
             title="Riwayat Data"
           >
@@ -55,7 +55,7 @@ export default function DashboardHeader({
           <Link
             href="/settings"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/settings" ? "bg-teal-500 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/settings" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
             }`}
             title="Pengaturan"
           >
@@ -65,8 +65,8 @@ export default function DashboardHeader({
 
         {/* Demo Mode Badge */}
         {isDemoMode && (
-          <span className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 animate-pulse">
-            <span className="hidden sm:block w-1.5 h-1.5 rounded-full bg-indigo-400" />
+          <span className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-bold bg-primary/10 text-primary dark:text-secondary border border-primary/20 animate-pulse">
+            <span className="hidden sm:block w-1.5 h-1.5 rounded-full bg-secondary" />
             DEMO
           </span>
         )}
@@ -75,10 +75,10 @@ export default function DashboardHeader({
         {!isDemoMode && (
           <span className={`flex items-center justify-center w-6 h-6 sm:w-auto sm:h-auto sm:px-2 sm:py-1 rounded-md text-[10px] font-bold border ${
             connectionStatus === "connected"
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+              ? "bg-primary/10 text-primary dark:text-secondary border-primary/20"
               : (connectionStatus === "connecting" || connectionStatus === "verifying")
-                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                ? "bg-warning/10 text-amber-600 dark:text-amber-400 border-warning/20"
+                : "bg-danger/10 text-rose-600 dark:text-rose-400 border-danger/20"
           }`}>
             {connectionStatus === "connected" ? (
               <Wifi className="w-3 h-3" />
@@ -95,7 +95,7 @@ export default function DashboardHeader({
 
         <button
           onClick={onDisconnect}
-          className="p-1.5 sm:p-2 rounded-lg transition-colors border border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 active:scale-95 cursor-pointer"
+          className="p-1.5 sm:p-2 rounded-lg transition-colors border border-danger/20 bg-danger/10 text-rose-600 dark:text-rose-400 hover:bg-danger/20 active:scale-95 cursor-pointer"
           title="Ganti Alat"
         >
           <LogOut className="w-4 h-4" />

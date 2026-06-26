@@ -21,13 +21,13 @@ export function Toaster() {
       toastOptions={{
         unstyled: true,
         classNames: {
-          toast: "flex flex-col gap-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl shadow-xl shadow-teal-500/5 dark:shadow-teal-500/10 font-sans tracking-wide p-4",
+          toast: "flex flex-col gap-1 w-full bg-surface border border-border text-text-primary rounded-2xl shadow-xl shadow-primary/5 dark:shadow-primary/10 font-sans tracking-wide p-4",
           title: "font-semibold text-sm",
-          description: "text-slate-500 dark:text-slate-400 text-xs",
-          success: "border-emerald-500/20 dark:border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
-          error: "border-rose-500/20 dark:border-rose-500/20 bg-rose-500/5 dark:bg-rose-500/5 text-rose-700 dark:text-rose-400",
-          warning: "border-amber-500/20 dark:border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/5 text-amber-700 dark:text-amber-400",
-          info: "border-indigo-500/20 dark:border-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-500/5 text-indigo-700 dark:text-indigo-400",
+          description: "text-text-secondary text-xs",
+          success: "border-primary/20 dark:border-primary/20 bg-primary/5 dark:bg-primary/5 text-emerald-700 dark:text-secondary",
+          error: "border-danger/20 dark:border-danger/20 bg-danger/5 dark:bg-danger/5 text-rose-700 dark:text-rose-400",
+          warning: "border-warning/20 dark:border-warning/20 bg-warning/5 dark:bg-warning/5 text-amber-700 dark:text-amber-400",
+          info: "border-primary/20 dark:border-primary/20 bg-primary/5 dark:bg-primary/5 text-indigo-700 dark:text-secondary",
         }
       }}
     />

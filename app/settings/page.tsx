@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { WidgetVariant } from "../../types";
 import { useMQTTContext } from "../../components/MQTTProvider";
 import SharedGridLayout from "../../components/SharedGridLayout";
 
@@ -23,14 +24,15 @@ export default function SettingsPage() {
     );
   }
 
-  const renderWidget = (type: string) => {
+  const renderWidget = (type: string, variant?: string) => {
+    const v = variant as WidgetVariant;
     switch (type) {
       case "threshold": 
-        return <ThresholdSettingsCard telemetry={telemetry} deviceId={config.deviceId} publishCommand={publishCommand} />;
+        return <ThresholdSettingsCard telemetry={telemetry} deviceId={config.deviceId} publishCommand={publishCommand} variant={v} />;
       case "sistem": 
-        return <SystemSettingsCard publishCommand={publishCommand} telemetry={telemetry} otaLogs={otaLogs} clearOtaLogs={clearOtaLogs} />;
+        return <SystemSettingsCard publishCommand={publishCommand} telemetry={telemetry} otaLogs={otaLogs} clearOtaLogs={clearOtaLogs} variant={v} />;
       case "kalibrasi-pompa": 
-        return <PumpCalibrationCard telemetry={telemetry} publishCommand={publishCommand} />;
+        return <PumpCalibrationCard telemetry={telemetry} publishCommand={publishCommand} variant={v} />;
       default: 
         return null;
     }

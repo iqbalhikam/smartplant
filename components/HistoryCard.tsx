@@ -76,7 +76,7 @@ export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-primary/20 blur-2xl"></div>
           <div className="flex items-center justify-between z-10 mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(20,184,166,0.2)]">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(20,184,166,0.2)]">
                 <TrendingUp className="w-5 h-5 text-primary dark:text-secondary" />
               </div>
               <h2 className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-200">TREN LINGKUNGAN</h2>
@@ -92,7 +92,7 @@ export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
 
     if (variant === "solid") {
       return (
-        <div className="bg-gradient-to-br from-secondary to-primary rounded-2xl p-5 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
+        <div className="bg-linear-to-br from-secondary to-primary rounded-2xl p-5 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
           <div className="flex items-center justify-between border-b border-white/20 pb-3 mb-3 z-10">
             <div className="flex items-center gap-2 text-white">
@@ -111,7 +111,7 @@ export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
     if (variant === "neon") {
       return (
         <div className="bg-background border border-primary/50 rounded-xl p-5 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(20,184,166,0.3),inset_0_0_20px_rgba(20,184,166,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(20,184,166,0.8)]" />

@@ -343,7 +343,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
               </div>
               <button
                 onClick={handleInstallClick}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-br from-secondary to-primary hover:from-primary hover:to-primary text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-primary/15 active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-br from-secondary to-primary hover:from-primary hover:to-primary text-white rounded-xl text-xs font-bold tracking-wide transition-all duration-300 shadow-lg shadow-primary/15 active:scale-95 cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Install Update Sekarang
@@ -375,7 +375,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
                 </button>
                 <button
                   onClick={handleInstallClick}
-                  className="flex-1 py-2 bg-gradient-to-br from-secondary to-primary hover:from-amber-600 hover:to-primary text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-warning/20 cursor-pointer active:scale-95"
+                  className="flex-1 py-2 bg-linear-to-br from-secondary to-primary hover:from-amber-600 hover:to-primary text-slate-950 rounded-xl text-xs font-black transition-all duration-200 shadow-lg shadow-warning/20 cursor-pointer active:scale-95"
                 >
                   Ya, Install Sekarang!
                 </button>
@@ -516,7 +516,7 @@ export default function SystemSettingsCard({ publishCommand, telemetry, otaLogs 
     if (variant === "neon") {
       return (
         <div className="bg-background border border-slate-500/50 rounded-xl flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(100,116,139,0.3),inset_0_0_20px_rgba(100,116,139,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
           <div className="flex-1 flex flex-col relative z-10">
             {settingsContent}
           </div>

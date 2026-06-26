@@ -32,7 +32,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+      <body className="bg-background text-text-primary transition-colors duration-300">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

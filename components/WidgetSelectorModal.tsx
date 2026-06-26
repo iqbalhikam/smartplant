@@ -12,6 +12,7 @@ const AVAILABLE_WIDGETS: Record<string, { type: string, name: string, desc: stri
     { type: "kontrol", name: "Kontrol Pompa", desc: "Kendali pompa dan aktuator", variants: ['default'] },
     { type: "riwayat", name: "Riwayat", desc: "Grafik riwayat sensor", variants: ['default'] },
     { type: "ekosistem", name: "Kelembapan Tanah", desc: "Status kelembapan tanah", variants: ['default', 'minimal', 'glassmorphism'] },
+    { type: "water-demand", name: "Plant Water Demand", desc: "Status kebutuhan air relatif", variants: ['default', 'glassmorphism'] },
     { type: "cahaya", name: "Sensor Suhu & Cahaya", desc: "Suhu udara dan cahaya", variants: ['default', 'minimal', 'glassmorphism'] },
     { type: "clock", name: "Jam Digital", desc: "Waktu sistem saat ini", variants: ['default'] },
     { type: "ai-assistant", name: "AI Assistant", desc: "Chatbot AI", variants: ['default'] },
@@ -47,6 +48,7 @@ export default function WidgetSelectorModal({ renderWidget }: WidgetSelectorModa
     let h = 4; // Default standard size
     if (type === "ekosistem") { w = 5; h = 8; }
     else if (type === "riwayat") { w = 5; h = 7; }
+    else if (type === "water-demand") { w = 5; h = 4; }
     else if (type === "ai-status") { w = 4; h = 4; }
     else if (type === "kontrol") { w = 4; h = 11; }
     else if (type === "ai-assistant" || type === "cahaya" || type === "clock") { w = 3; h = 5; }
@@ -76,8 +78,8 @@ export default function WidgetSelectorModal({ renderWidget }: WidgetSelectorModa
   return (
     <Dialog.Root open={isWidgetModalOpen} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" />
-        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[90vh] w-[95vw] max-w-5xl translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-background p-0 shadow-2xl focus:outline-none z-[101] border border-border flex overflow-hidden">
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100" />
+        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[90vh] w-[95vw] max-w-5xl translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-background p-0 shadow-2xl focus:outline-none z-100 border border-border flex overflow-hidden">
           
           {/* Left Column: Widget List */}
           <div className="w-1/3 min-w-[250px] max-w-[300px] bg-surface border-r border-border flex flex-col">

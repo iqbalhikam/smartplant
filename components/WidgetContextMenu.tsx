@@ -15,11 +15,11 @@ export default function WidgetContextMenu({ widgetId, children }: { widgetId: st
       </ContextMenu.Trigger>
 
       <ContextMenu.Portal>
-        <ContextMenu.Content 
-          className="min-w-[200px] bg-surface rounded-lg shadow-xl border border-border p-1 z-[100] text-sm"
+        <ContextMenu.Content
+          className="min-w-[200px] bg-surface rounded-lg shadow-xl border border-border p-1 z-100 text-sm"
           alignOffset={5}
         >
-          <ContextMenu.Item 
+          <ContextMenu.Item
             className="flex items-center gap-2 px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
             onClick={(e) => {
               e.stopPropagation();
@@ -29,8 +29,8 @@ export default function WidgetContextMenu({ widgetId, children }: { widgetId: st
             {isEditMode ? <Lock className="w-4 h-4" /> : <LayoutTemplate className="w-4 h-4" />}
             <span>{isEditMode ? "Lock Layout" : "Edit Layout"}</span>
           </ContextMenu.Item>
-          
-          <ContextMenu.Separator className="h-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+
+          <ContextMenu.Separator className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
 
           <ContextMenu.Sub>
             <ContextMenu.SubTrigger className="flex items-center gap-2 px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200">
@@ -38,47 +38,47 @@ export default function WidgetContextMenu({ widgetId, children }: { widgetId: st
               <span>Gaya Widget</span>
             </ContextMenu.SubTrigger>
             <ContextMenu.Portal>
-              <ContextMenu.SubContent 
-                className="min-w-[150px] bg-surface rounded-lg shadow-xl border border-border p-1 z-[100] text-sm"
+              <ContextMenu.SubContent
+                className="min-w-[150px] bg-surface rounded-lg shadow-xl border border-border p-1 z-100 text-sm"
                 alignOffset={-5}
               >
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "default")}
                 >
                   Default
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "minimal")}
                 >
                   Minimal
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "glassmorphism")}
                 >
                   Glassmorphism
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "solid")}
                 >
                   Solid Color
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "neon")}
                 >
                   Neon Cyberpunk
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "neobrutalism")}
                 >
                   Neobrutalism
                 </ContextMenu.Item>
-                <ContextMenu.Item 
+                <ContextMenu.Item
                   className="px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
                   onClick={() => updateWidgetVariant(activePage, widgetId, "neumorphism")}
                 >
@@ -88,9 +88,9 @@ export default function WidgetContextMenu({ widgetId, children }: { widgetId: st
             </ContextMenu.Portal>
           </ContextMenu.Sub>
 
-          <ContextMenu.Separator className="h-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+          <ContextMenu.Separator className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
 
-          <ContextMenu.Item 
+          <ContextMenu.Item
             className="flex items-center gap-2 px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
             onClick={(e) => {
               e.stopPropagation();

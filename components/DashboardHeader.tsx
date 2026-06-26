@@ -21,9 +21,9 @@ export default function DashboardHeader({
   const pathname = usePathname();
 
   return (
-    <header className="flex items-center justify-between h-14 px-2 sm:px-4 bg-white/40 backdrop-blur-md border-b border-white/50 shadow-[0_4px_30px_rgba(0,0,0,0.1)] dark:bg-slate-800/40 dark:border-white/10 dark:shadow-[0_4px_30px_rgba(0,0,0,0.3)] shrink-0 z-50">
+    <header className="flex items-center justify-between h-14 px-2 sm:px-4 bg-surface/60 backdrop-blur-md border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.3)] shrink-0 z-50">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-white/5 p-0.5 border border-slate-200 dark:border-transparent">
+        <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden shadow-sm bg-surface p-0.5 border border-border">
           <Image src="/image/LOGO.png" alt="SmartPlantCare Logo" fill sizes="32px" priority className="object-contain" />
         </div>
         <h1 className="text-lg font-extrabold tracking-tight bg-linear-to-r from-primary via-primary to-primary dark:from-teal-200 dark:via-emerald-200 dark:to-indigo-100 bg-clip-text text-transparent hidden sm:block">
@@ -37,7 +37,7 @@ export default function DashboardHeader({
           <Link
             href="/"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/" ? "bg-primary text-white" : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/10"
             }`}
             title="Dashboard"
           >
@@ -46,7 +46,7 @@ export default function DashboardHeader({
           <Link
             href="/history"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/history" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/history" ? "bg-primary text-white" : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/10"
             }`}
             title="Riwayat Data"
           >
@@ -55,7 +55,7 @@ export default function DashboardHeader({
           <Link
             href="/settings"
             className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-              pathname === "/settings" ? "bg-primary text-white" : "text-text-secondary hover:bg-slate-200 dark:hover:bg-slate-800"
+              pathname === "/settings" ? "bg-primary text-white" : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/10"
             }`}
             title="Pengaturan"
           >

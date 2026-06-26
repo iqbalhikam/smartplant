@@ -144,7 +144,7 @@ export default function SoilMoistureCard({ telemetry, variant = "default" }: Soi
 
   if (variant === "solid") {
     return (
-      <motion.div variants={itemVariants} className="bg-gradient-to-br from-secondary to-primary text-white border-none rounded-2xl p-5 flex flex-col md:col-span-2 shadow-xl h-full overflow-hidden relative">
+      <motion.div variants={itemVariants} className="bg-linear-to-br from-secondary to-primary text-white border-none rounded-2xl p-5 flex flex-col md:col-span-2 shadow-xl h-full overflow-hidden relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 z-0"></div>
         <div className="relative z-10 flex flex-col h-full">
           <div className="flex justify-between items-start mb-4">
@@ -190,7 +190,7 @@ export default function SoilMoistureCard({ telemetry, variant = "default" }: Soi
   if (variant === "neon") {
     return (
       <motion.div variants={itemVariants} className="bg-background border border-primary/50 rounded-xl p-5 flex flex-col md:col-span-2 h-full relative overflow-hidden shadow-[0_0_15px_rgba(16,185,129,0.3),inset_0_0_20px_rgba(16,185,129,0.1)]">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
         <div className="flex justify-between items-start mb-6">
            <div className="flex items-center gap-2">
              <Droplet className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />

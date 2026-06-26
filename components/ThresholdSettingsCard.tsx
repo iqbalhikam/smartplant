@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Sliders, Database, Key, Save, Loader2 } from "lucide-react";
+import { Sliders, Database, Key, Save, Loader2, ListOrdered } from "lucide-react";
 import { SmartPlantData, WidgetVariant } from "../types";
 import { toast } from "sonner";
-
-const PLANT_PRESETS = [
-  { id: "sayuran", label: "Sayuran & Buah", keringPct: 70, basahPct: 95, icon: "🍅" },
-  { id: "hias", label: "Tanaman Hias", keringPct: 50, basahPct: 90, icon: "🌿" },
-  { id: "kaktus", label: "Kaktus/Sukulen", keringPct: 20, basahPct: 40, icon: "🌵" },
-  { id: "air", label: "Tanaman Air", keringPct: 80, basahPct: 100, icon: "🌾" }
-];
+import PresetManagerModal from "./PresetManagerModal";
+import { useDeviceStore } from "../store/useDeviceStore";
 
 interface ThresholdSettingsCardProps {
   telemetry: SmartPlantData;
@@ -23,6 +18,9 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
   const [localCooldown, setLocalCooldown] = useState<number>(telemetry?.cooldown ?? 60);
   const [isSaving, setIsSaving] = useState(false);
   const [sliderKey, setSliderKey] = useState(0);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const { plantPresets, setPlantPresets } = useDeviceStore();
+  const [isLoadingPresets, setIsLoadingPresets] = useState(false);
 
   const calBasah = telemetry?.calBasah ?? 0;
   const calKering = telemetry?.calKering ?? 4095;
@@ -33,6 +31,30 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
     setLocalCooldown(telemetry?.cooldown ?? 60);
     setSliderKey(prev => prev + 1);
   }, [telemetry?.batasBasah, telemetry?.batasKering, telemetry?.cooldown]);
+
+  useEffect(() => {
+    if (deviceId) {
+      const fetchPresets = async () => {
+        try {
+          setIsLoadingPresets(true);
+          const res = await fetch(`/api/presets?deviceId=${deviceId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.presets && data.presets.length > 0) {
+              setPlantPresets(data.presets);
+            } else if (plantPresets.length > 0) {
+              setPlantPresets([]); 
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsLoadingPresets(false);
+        }
+      };
+      fetchPresets();
+    }
+  }, [deviceId, setPlantPresets]);
 
   const applyPreset = (keringPct: number, basahPct: number) => {
     const range = calKering - calBasah;
@@ -105,24 +127,49 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
 
       <div className="flex-1 overflow-y-auto pr-2 -mr-2">
         <div className="mb-6 flex flex-col gap-3">
-          <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">Quick Presets (Otomatis)</span>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {PLANT_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() => applyPreset(preset.keringPct, preset.basahPct)}
-                className="flex flex-col items-center justify-center p-3 bg-white dark:bg-slate-800/80 hover:bg-primary/5 dark:hover:bg-primary/10 border border-border hover:border-primary/50 rounded-xl transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md group"
-              >
-                <span className="text-2xl mb-1 group-hover:scale-110 transition-transform duration-200">{preset.icon}</span>
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 text-center leading-tight mb-1">{preset.label}</span>
-                <div className="flex items-center gap-1 text-[9px] text-slate-500 dark:text-slate-400 font-mono">
-                  <span>{preset.keringPct}%</span>
-                  <span>-</span>
-                  <span>{preset.basahPct}%</span>
-                </div>
-              </button>
-            ))}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-text-secondary font-semibold uppercase tracking-wider">
+              Quick Presets {isLoadingPresets && <Loader2 className="inline-block w-3 h-3 animate-spin ml-2" />}
+            </span>
           </div>
+          
+          {plantPresets.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-1">
+              {plantPresets.slice(0, 4).map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => applyPreset(preset.keringPct, preset.basahPct)}
+                  className="flex flex-col items-center justify-center p-3 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/50 hover:border-primary/50 rounded-xl transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md group"
+                >
+                  <span className="text-2xl mb-1 group-hover:scale-110 transition-transform duration-200">{preset.icon}</span>
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 text-center leading-tight mb-1">{preset.label}</span>
+                  <div className="flex items-center gap-1 text-[9px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span>{preset.keringPct}%</span>
+                    <span>-</span>
+                    <span>{preset.basahPct}%</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsPresetModalOpen(true)}
+            className="w-full flex items-center justify-between p-4 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/50 hover:border-primary/50 rounded-xl transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ListOrdered className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-sm text-slate-700 dark:text-slate-200">Show All Presets</span>
+                <span className="text-[10px] text-slate-500">Kelola dan susun preset tanaman Anda</span>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-primary px-3 py-1 bg-primary/10 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
+              Buka
+            </span>
+          </button>
         </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -205,19 +252,26 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-border flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs mb-1">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-background/50 rounded-lg border border-border font-mono">
+      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/50 flex flex-wrap justify-between items-center gap-3 text-[10px] md:text-xs mb-1">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700/50 font-mono">
           <Database className="w-3.5 h-3.5 text-primary dark:text-secondary" />
           <span className="text-slate-500">Sub:</span>
           <span className="text-text-primary font-semibold">{deviceId}/telemetry</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-background/50 rounded-lg border border-border font-mono">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700/50 font-mono">
           <Key className="w-3.5 h-3.5 text-warning dark:text-amber-400" />
           <span className="text-slate-500">Pub:</span>
           <span className="text-text-primary font-semibold">{deviceId}/cmd</span>
         </div>
       </div>
       </div>
+
+      <PresetManagerModal
+        isOpen={isPresetModalOpen}
+        setIsOpen={setIsPresetModalOpen}
+        onApplyPreset={applyPreset}
+        deviceId={deviceId}
+      />
     </>
   );
 
@@ -254,7 +308,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
     if (variant === "neon") {
       return (
         <section className="bg-background border border-slate-500/50 rounded-xl p-4 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(100,116,139,0.3),inset_0_0_20px_rgba(100,116,139,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
           <div className="flex-1 flex flex-col relative z-10">
             {settingsContent}
           </div>
@@ -284,7 +338,7 @@ export default function ThresholdSettingsCard({ telemetry, deviceId, publishComm
 
     // Default UI
     return (
-      <section className="h-full flex flex-col p-4 bg-surface border border-border backdrop-blur-xl rounded-2xl shadow-xl hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 pointer-events-auto">
+      <section className="h-full flex flex-col p-4 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 pointer-events-auto">
         {settingsContent}
       </section>
     );

@@ -11,6 +11,14 @@ export interface WidgetLayout {
   h: number;
 }
 
+export interface PlantPreset {
+  id: string;
+  label: string;
+  keringPct: number;
+  basahPct: number;
+  icon: string;
+}
+
 interface DeviceStore {
   activeDeviceId: string | null;
   setActiveDeviceId: (id: string | null) => void;
@@ -35,7 +43,19 @@ interface DeviceStore {
 
   themeColor: string;
   setThemeColor: (color: string) => void;
+
+  plantPresets: PlantPreset[];
+  addPlantPreset: (preset: PlantPreset) => void;
+  removePlantPreset: (id: string) => void;
+  setPlantPresets: (presets: PlantPreset[]) => void;
 }
+
+const DEFAULT_PLANT_PRESETS: PlantPreset[] = [
+  { id: "sayuran", label: "Sayuran & Buah", keringPct: 70, basahPct: 95, icon: "🍅" },
+  { id: "hias", label: "Tanaman Hias", keringPct: 50, basahPct: 90, icon: "🌿" },
+  { id: "kaktus", label: "Kaktus/Sukulen", keringPct: 20, basahPct: 40, icon: "🌵" },
+  { id: "air", label: "Tanaman Air", keringPct: 80, basahPct: 100, icon: "🌾" }
+];
 
 const DEFAULT_LAYOUTS: Record<string, WidgetLayout[]> = {
   dashboard: [
@@ -80,6 +100,11 @@ export const useDeviceStore = create<DeviceStore>()(
 
       themeColor: "emerald", // Default theme color
       setThemeColor: (color) => set({ themeColor: color }),
+      
+      plantPresets: DEFAULT_PLANT_PRESETS,
+      addPlantPreset: (preset) => set((state) => ({ plantPresets: [...state.plantPresets, preset] })),
+      removePlantPreset: (id) => set((state) => ({ plantPresets: state.plantPresets.filter(p => p.id !== id) })),
+      setPlantPresets: (presets) => set({ plantPresets: presets }),
 
       layouts: DEFAULT_LAYOUTS,
       
@@ -154,7 +179,7 @@ export const useDeviceStore = create<DeviceStore>()(
     }),
     {
       name: "smartplant-dashboard-storage",
-      version: 5, // version bump to apply exact user requested default layout
+      version: 6, // version bump to apply plant presets state
     }
   )
 );

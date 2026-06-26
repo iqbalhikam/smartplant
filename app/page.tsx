@@ -12,6 +12,7 @@ import AIAssistantCard from "../components/AIAssistantCard";
 import AIFuzzyStatusCard from "../components/AIFuzzyStatusCard";
 import HistoryCard from "../components/HistoryCard";
 import ClockWidget from "../components/ClockWidget";
+import PlantWaterDemandBar from "../components/PlantWaterDemandBar";
 import { Loader2 } from "lucide-react";
 
 export default function SmartPlantCareDashboard() {
@@ -41,6 +42,7 @@ export default function SmartPlantCareDashboard() {
       case "kontrol": return <ControlsCard telemetry={telemetry} publishCommand={publishCommand} variant={v} />;
       case "riwayat": return <HistoryCard variant={v} />;
       case "ekosistem": return <SoilMoistureCard telemetry={telemetry} variant={v} />;
+      case "water-demand": return <PlantWaterDemandBar telemetry={telemetry} variant={v} />;
       case "cahaya": return <LightSensorCard telemetry={telemetry} variant={v} />;
       case "ai-assistant": return <AIAssistantCard telemetry={telemetry} variant={v} />;
       case "clock": return <ClockWidget variant={v} />;

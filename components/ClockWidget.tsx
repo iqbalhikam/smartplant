@@ -19,7 +19,7 @@ export default function ClockWidget({ variant }: ClockWidgetProps) {
 
   if (!time) {
     return (
-      <div className="bg-gradient-to-br from-secondary to-primary rounded-2xl p-6 shadow-xl h-full flex flex-col justify-center items-center text-white">
+      <div className="bg-linear-to-br from-secondary to-primary rounded-2xl p-6 shadow-xl h-full flex flex-col justify-center items-center text-white">
         <Clock className="w-8 h-8 opacity-50 animate-pulse" />
       </div>
     );
@@ -48,10 +48,10 @@ export default function ClockWidget({ variant }: ClockWidgetProps) {
     return (
       <div className="bg-surface backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] h-full flex flex-col items-center justify-center relative overflow-hidden pointer-events-auto">
         <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-primary/20 blur-2xl"></div>
-        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 border border-white/30 bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 border border-white/30 bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
           <Clock className="w-7 h-7 text-primary dark:text-secondary drop-shadow-sm" />
         </div>
-        <div className="text-4xl font-black font-mono tracking-tighter drop-shadow-sm bg-clip-text text-transparent bg-gradient-to-br from-secondary to-primary dark:from-secondary dark:to-secondary">
+        <div className="text-4xl font-black font-mono tracking-tighter drop-shadow-sm bg-clip-text text-transparent bg-linear-to-br from-secondary to-primary dark:from-secondary dark:to-secondary">
           {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </div>
         <p className="text-xs font-medium mt-2 text-text-secondary uppercase tracking-widest">
@@ -63,7 +63,7 @@ export default function ClockWidget({ variant }: ClockWidgetProps) {
 
   if (variant === "solid") {
     return (
-      <div className="bg-gradient-to-br from-secondary to-primary rounded-2xl p-6 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
+      <div className="bg-linear-to-br from-secondary to-primary rounded-2xl p-6 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
         <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
         <div className="absolute bottom-[-20%] left-[-10%] w-24 h-24 rounded-full bg-black/10 blur-xl"></div>
         <div className="flex items-center gap-2 mb-2 z-10 text-white">
@@ -86,7 +86,7 @@ export default function ClockWidget({ variant }: ClockWidgetProps) {
   if (variant === "neon") {
     return (
       <div className="bg-background border border-primary/50 rounded-xl p-5 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3),inset_0_0_20px_rgba(99,102,241,0.1)] pointer-events-auto">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
         <div className="flex justify-between items-start mb-6">
            <div className="flex items-center gap-2">
              <Clock className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />

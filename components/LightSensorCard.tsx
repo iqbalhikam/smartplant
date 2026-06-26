@@ -44,10 +44,10 @@ export default function LightSensorCard({ telemetry, variant = "default" }: Ligh
         className={`bg-surface backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] flex flex-col h-full overflow-hidden p-6 transition-all hover:shadow-lg`}
       >
         <div className="flex-1 flex flex-col justify-center items-center text-center">
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 border border-white/30 ${isTerang ? 'bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(249,115,22,0.2)]' : 'bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]'}`}>
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 border border-white/30 ${isTerang ? 'bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(249,115,22,0.2)]' : 'bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]'}`}>
             {isTerang ? <Sun className="w-7 h-7 text-primary dark:text-secondary drop-shadow-sm" /> : <Moon className="w-7 h-7 text-primary dark:text-secondary drop-shadow-sm" />}
           </div>
-          <span className={`text-4xl font-black tracking-tight drop-shadow-sm bg-clip-text text-transparent ${isTerang ? 'bg-gradient-to-br from-secondary to-primary dark:from-secondary dark:to-secondary' : 'bg-gradient-to-br from-secondary to-primary dark:from-secondary dark:to-secondary'}`}>
+          <span className={`text-4xl font-black tracking-tight drop-shadow-sm bg-clip-text text-transparent ${isTerang ? 'bg-linear-to-br from-secondary to-primary dark:from-secondary dark:to-secondary' : 'bg-linear-to-br from-secondary to-primary dark:from-secondary dark:to-secondary'}`}>
             {isTerang ? "TERANG" : "GELAP"}
           </span>
           <h3 className="font-medium text-slate-600 dark:text-slate-300 text-sm mt-3 tracking-wide">LIGHT SENSOR</h3>
@@ -60,7 +60,7 @@ export default function LightSensorCard({ telemetry, variant = "default" }: Ligh
     return (
       <motion.div
         variants={itemVariants}
-        className={`bg-gradient-to-br text-white shadow-xl rounded-2xl flex flex-col h-full overflow-hidden p-4 transition-all duration-300 relative ${isTerang ? 'from-primary to-primary shadow-primary/30' : 'from-primary to-purple-700 shadow-primary/30'}`}
+        className={`bg-linear-to-br text-white shadow-xl rounded-2xl flex flex-col h-full overflow-hidden p-4 transition-all duration-300 relative ${isTerang ? 'from-primary to-primary shadow-primary/30' : 'from-primary to-purple-700 shadow-primary/30'}`}
       >
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
         <div className="flex items-center justify-between border-b border-white/20 pb-3 mb-3 shrink-0 relative z-10">
@@ -86,7 +86,7 @@ export default function LightSensorCard({ telemetry, variant = "default" }: Ligh
   if (variant === "neon") {
     return (
       <motion.div variants={itemVariants} className="bg-background border border-primary/50 rounded-xl p-5 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(249,115,22,0.3),inset_0_0_20px_rgba(249,115,22,0.1)]">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
         <div className="flex justify-between items-start mb-6">
            <div className="flex items-center gap-2">
              {isTerang ? <Sun className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" /> : <Moon className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />}

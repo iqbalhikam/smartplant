@@ -144,7 +144,7 @@ export default function ControlsCard({ telemetry, publishCommand, variant }: Con
         <div className="bg-surface backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl p-5 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] h-full flex flex-col relative overflow-hidden pointer-events-auto">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-primary/20 blur-2xl"></div>
           <div className="flex items-center gap-3 mb-3 z-10">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
               <Cpu className="w-5 h-5 text-primary dark:text-secondary" />
             </div>
             <div>
@@ -161,7 +161,7 @@ export default function ControlsCard({ telemetry, publishCommand, variant }: Con
 
     if (variant === "solid") {
       return (
-        <div className="bg-gradient-to-br from-secondary to-primary rounded-2xl p-4 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
+        <div className="bg-linear-to-br from-secondary to-primary rounded-2xl p-4 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
           <div className="flex items-center gap-2 border-b border-white/20 pb-2 mb-3 z-10 text-white">
             <Cpu className="w-5 h-5" />
@@ -177,7 +177,7 @@ export default function ControlsCard({ telemetry, publishCommand, variant }: Con
     if (variant === "neon") {
       return (
         <div className="bg-background border border-primary/50 rounded-xl p-4 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3),inset_0_0_20px_rgba(99,102,241,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
           <div className="flex items-center gap-2 mb-4">
             <Cpu className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
             <h3 className="font-mono text-secondary uppercase tracking-[0.2em] text-xs drop-shadow-[0_0_2px_rgba(99,102,241,0.5)]">SYS_CONTROL</h3>

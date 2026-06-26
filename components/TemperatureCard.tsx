@@ -45,7 +45,7 @@ export default function TemperatureCard({ telemetry, variant = "default" }: Temp
       >
         <div className="flex-1 flex flex-col justify-center items-center text-center">
           {isAvailable ? (
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-secondary/30 to-rose-400/10 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(249,115,22,0.2)] border border-white/30">
+            <div className="w-14 h-14 rounded-full bg-linear-to-br from-secondary/30 to-rose-400/10 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(249,115,22,0.2)] border border-white/30">
               <Thermometer className="w-7 h-7 text-primary dark:text-secondary drop-shadow-sm" />
             </div>
           ) : (
@@ -53,7 +53,7 @@ export default function TemperatureCard({ telemetry, variant = "default" }: Temp
               <PowerOff className="w-7 h-7 text-slate-400" />
             </div>
           )}
-          <span className={`text-5xl font-black tracking-tight drop-shadow-sm ${isAvailable ? 'bg-clip-text text-transparent bg-gradient-to-br from-secondary to-primary dark:from-secondary dark:to-rose-400' : 'text-slate-400'}`}>
+          <span className={`text-5xl font-black tracking-tight drop-shadow-sm ${isAvailable ? 'bg-clip-text text-transparent bg-linear-to-br from-secondary to-primary dark:from-secondary dark:to-rose-400' : 'text-slate-400'}`}>
             {isAvailable ? `${suhu.toFixed(1)}°` : "--"}
           </span>
           <h3 className="font-medium text-slate-600 dark:text-slate-300 text-sm mt-3 tracking-wide">TEMPERATURE</h3>
@@ -66,7 +66,7 @@ export default function TemperatureCard({ telemetry, variant = "default" }: Temp
     return (
       <motion.div
         variants={itemVariants}
-        className={`bg-gradient-to-br ${isAvailable ? 'from-primary to-red-600 shadow-primary/30 hover:shadow-primary/50' : 'from-slate-400 to-slate-600 shadow-slate-500/20'} text-white shadow-xl rounded-2xl flex flex-col h-full overflow-hidden p-4 transition-all duration-300 relative`}
+        className={`bg-linear-to-br ${isAvailable ? 'from-primary to-red-600 shadow-primary/30 hover:shadow-primary/50' : 'from-slate-400 to-slate-600 shadow-slate-500/20'} text-white shadow-xl rounded-2xl flex flex-col h-full overflow-hidden p-4 transition-all duration-300 relative`}
       >
         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
         <div className="flex items-center justify-between border-b border-white/20 pb-3 mb-3 shrink-0 relative z-10">
@@ -101,7 +101,7 @@ export default function TemperatureCard({ telemetry, variant = "default" }: Temp
   if (variant === "neon") {
     return (
       <motion.div variants={itemVariants} className={`bg-background border border-primary/50 rounded-xl p-5 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(249,115,22,0.3),inset_0_0_20px_rgba(249,115,22,0.1)] ${!isAvailable ? 'opacity-60 grayscale' : ''}`}>
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
         <div className="flex justify-between items-start mb-6">
            <div className="flex items-center gap-2">
              <Thermometer className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />

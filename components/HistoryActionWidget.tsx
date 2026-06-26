@@ -97,7 +97,7 @@ export default function HistoryActionWidget({ isLoading, actionLogs, chartData, 
     if (variant === "neon") {
       return (
         <div className="bg-background border border-primary/50 rounded-xl p-6 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3),inset_0_0_20px_rgba(99,102,241,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
           <div className="flex-1 flex flex-col relative z-10">
             {actionContent}
           </div>

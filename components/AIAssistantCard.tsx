@@ -146,7 +146,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
                 <button
                   onClick={handleAnalyzePlant}
                   disabled={aiLoading || !telemetry}
-                  className="w-full py-2 bg-gradient-to-br from-secondary to-primary hover:from-primary hover:to-primary text-white disabled:opacity-50 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  className="w-full py-2 bg-linear-to-br from-secondary to-primary hover:from-primary hover:to-primary text-white disabled:opacity-50 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   {aiLoading ? (
                     <>
@@ -169,7 +169,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="p-3 bg-gradient-to-br from-secondary to-primary/30 dark:from-slate-900/50 dark:to-indigo-900/20 border border-indigo-100 dark:border-primary/20 rounded-xl flex flex-col items-center justify-center gap-3 py-6"
+                    className="p-3 bg-linear-to-br from-secondary to-primary/30 dark:from-slate-900/50 dark:to-indigo-900/20 border border-indigo-100 dark:border-primary/20 rounded-xl flex flex-col items-center justify-center gap-3 py-6"
                   >
                     <div className="relative">
                       <div className="absolute inset-0 bg-primary blur-xl opacity-20 animate-pulse rounded-full"></div>
@@ -204,12 +204,12 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                    className="p-3.5 bg-gradient-to-br from-indigo-50/90 to-purple-50/90 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-200/60 dark:border-primary/30 rounded-xl shadow-[inset_0_1px_3px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] overflow-y-auto max-h-[350px] text-xs custom-scrollbar relative"
+                    className="p-3.5 bg-linear-to-br from-indigo-50/90 to-purple-50/90 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-200/60 dark:border-primary/30 rounded-xl shadow-[inset_0_1px_3px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] overflow-y-auto max-h-[350px] text-xs custom-scrollbar relative"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
                     
                     <div className="flex gap-3 relative z-10">
-                      <div className="p-2 bg-gradient-to-br from-secondary to-primary shadow-sm shadow-primary/20 rounded-lg h-fit shrink-0">
+                      <div className="p-2 bg-linear-to-br from-secondary to-primary shadow-sm shadow-primary/20 rounded-lg h-fit shrink-0">
                         <Bot className="w-4 h-4 text-white" />
                       </div>
                       <div className="space-y-2 flex-1 w-full min-w-0">
@@ -268,7 +268,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
         <div className="bg-surface backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-3xl p-5 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] h-full flex flex-col relative overflow-hidden pointer-events-auto">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-primary/20 blur-2xl"></div>
           <div className="flex items-center gap-3 mb-3 z-10">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-gradient-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/30 bg-linear-to-br from-secondary/30 to-secondary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)] shrink-0">
               <Bot className="w-5 h-5 text-primary dark:text-secondary" />
             </div>
             <div>
@@ -285,7 +285,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
 
     if (variant === "solid") {
       return (
-        <div className="bg-gradient-to-br from-secondary to-primary rounded-2xl p-4 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
+        <div className="bg-linear-to-br from-secondary to-primary rounded-2xl p-4 shadow-xl shadow-primary/30 h-full flex flex-col relative overflow-hidden pointer-events-auto">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
           <div className="flex items-center gap-2 border-b border-white/20 pb-2 mb-3 z-10 text-white">
             <Bot className="w-5 h-5" />
@@ -301,7 +301,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
     if (variant === "neon") {
       return (
         <div className="bg-background border border-primary/50 rounded-xl p-4 flex flex-col h-full relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3),inset_0_0_20px_rgba(99,102,241,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-secondary to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
           <div className="flex items-center gap-2 mb-4">
             <Bot className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
             <h3 className="font-mono text-secondary uppercase tracking-[0.2em] text-xs drop-shadow-[0_0_2px_rgba(99,102,241,0.5)]">SYS_AI_BOTANIST</h3>
@@ -368,7 +368,7 @@ export default function AIAssistantCard({ telemetry, variant = "default" }: AIAs
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
             onClick={() => setIsExpanded(false)}
           >
           <motion.div

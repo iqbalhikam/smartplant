@@ -149,7 +149,7 @@ export default function PumpCalibrationCard({ telemetry, publishCommand, variant
     if (variant === "neon") {
       return (
         <div className="bg-background border border-slate-500/50 rounded-xl flex flex-col p-4 h-full relative overflow-hidden shadow-[0_0_15px_rgba(100,116,139,0.3),inset_0_0_20px_rgba(100,116,139,0.1)] pointer-events-auto">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-slate-400 to-transparent opacity-70"></div>
           <div className="flex-1 flex flex-col relative z-10">
             {calibrationContent}
           </div>

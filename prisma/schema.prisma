@@ -17,6 +17,7 @@ model Device {
   sensorLogs      SensorLog[]
   actionLogs      FuzzyActionLog[]
   systemAlerts    SystemAlert[]
+  plantPresets    PlantPreset[]
 }
 
 model SensorLog {
@@ -54,4 +55,18 @@ model SystemAlert {
   createdAt   DateTime @default(now())
 
   @@index([deviceId, createdAt(sort: Desc)])
+}
+
+model PlantPreset {
+  id          String   @id @default(uuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  label       String
+  icon        String
+  keringPct   Int
+  basahPct    Int
+  urutan      Int
+  createdAt   DateTime @default(now())
+
+  @@index([deviceId])
 }

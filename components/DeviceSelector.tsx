@@ -36,9 +36,9 @@ export default function DeviceSelector() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/50">
-        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-        <span className="text-xs text-slate-500 font-medium">Memuat Alat...</span>
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/5 dark:bg-white/5">
+        <Loader2 className="w-4 h-4 animate-spin text-text-secondary" />
+        <span className="text-xs text-text-secondary font-medium">Memuat Alat...</span>
       </div>
     );
   }
@@ -78,7 +78,7 @@ export default function DeviceSelector() {
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeDeviceId === device.id
                       ? "bg-primary/10 text-primary dark:text-secondary font-semibold"
-                      : "text-text-primary hover:bg-slate-100 dark:hover:bg-slate-800"
+                      : "text-text-primary hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
                 >
                   <div className="flex items-center justify-between">

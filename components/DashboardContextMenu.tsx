@@ -38,7 +38,7 @@ export default function DashboardContextMenu({ children }: { children: React.Rea
             <span>Add Widget</span>
           </ContextMenu.Item>
           
-          <ContextMenu.Separator className="h-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+          <ContextMenu.Separator className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
 
           <ContextMenu.Sub>
             <ContextMenu.SubTrigger className="flex items-center justify-between px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 data-[state=open]:bg-slate-100 dark:data-[state=open]:bg-slate-800">
@@ -72,7 +72,7 @@ export default function DashboardContextMenu({ children }: { children: React.Rea
 
 
 
-          <ContextMenu.Separator className="h-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+          <ContextMenu.Separator className="h-px bg-slate-200 dark:bg-slate-800 my-1" />
 
           <ContextMenu.Item 
             className="flex items-center gap-2 px-2 py-2 rounded-md outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"

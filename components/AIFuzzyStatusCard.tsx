@@ -1,5 +1,5 @@
-import React from "react";
-import { BrainCircuit, Sun, PowerOff, Droplets, Zap } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { BrainCircuit, Sun, PowerOff, Droplets, Zap, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SmartPlantData, WidgetVariant } from "../types";
 
@@ -11,7 +11,7 @@ interface AIFuzzyStatusCardProps {
 // 1. Dictionary / Mapping Rules
 const getFuzzyRuleDetails = (rule: string) => {
   if (rule === "IDLE") return { kondisi: "Memantau Lingkungan", aksiPompa: "Mati (Standby)", aksiLampu: "Mati", warna: "text-slate-400", pompaGlow: false, lampuGlow: false };
-  if (rule === "COOLDOWN") return { kondisi: "Fase Istirahat AI", aksiPompa: "Mati (Jeda)", aksiLampu: "Mati", warna: "text-warning", pompaGlow: false, lampuGlow: false };
+  if (rule === "COOLDOWN") return { kondisi: "Fase Istirahat", aksiPompa: "Mati (Jeda)", aksiLampu: "Mati", warna: "text-warning", pompaGlow: false, lampuGlow: false };
   if (rule === "R_DEF_SK") return { kondisi: "Sangat Kering (Default) - Siram Sedang", aksiPompa: "Menyiram Sedang", aksiLampu: "Auto", warna: "text-danger", pompaGlow: true, lampuGlow: false };
   if (rule === "R_DEF_K") return { kondisi: "Kering (Default) - Siram Sedikit", aksiPompa: "Menyiram Sedikit", aksiLampu: "Auto", warna: "text-primary", pompaGlow: true, lampuGlow: false };
   if (rule === "R_DEF_L") return { kondisi: "Lembap (Default) - Stop Penyiraman", aksiPompa: "Mati (Stop)", aksiLampu: "Auto", warna: "text-primary", pompaGlow: false, lampuGlow: false };
@@ -34,7 +34,7 @@ const getFuzzyRuleDetails = (rule: string) => {
 
   // Fallback for any other watering rule
   if (/^R[1-9]$|^R1[0-1]$/.test(rule)) {
-    return { kondisi: "AI Mendeteksi Kekeringan", aksiPompa: "Menyiram", aksiLampu: "Auto", warna: "text-primary", pompaGlow: true, lampuGlow: false };
+    return { kondisi: "Mendeteksi Kekeringan", aksiPompa: "Menyiram", aksiLampu: "Auto", warna: "text-primary", pompaGlow: true, lampuGlow: false };
   }
 
   return { kondisi: "Menganalisis data...", aksiPompa: "Mati", aksiLampu: "Mati", warna: "text-slate-500", pompaGlow: false, lampuGlow: false };
@@ -73,6 +73,70 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
   const isManual = telemetry?.mode === "MANUAL";
   const rule = telemetry?.rule || "IDLE";
   
+  const [timeLeft, setTimeLeft] = useState(0);
+  const prevPompaRef = useRef(telemetry?.pompa);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (telemetry?.pompa === 1 && prevPompaRef.current !== 1) {
+      const duration = telemetry.durasiPompa || telemetry.baseDurasi || 0;
+      setTimeLeft(Math.ceil(duration / 1000));
+    } else if (telemetry?.pompa === 0) {
+      setTimeLeft(0);
+    }
+
+    if (telemetry?.pompa === 1) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    prevPompaRef.current = telemetry?.pompa;
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [telemetry?.pompa, telemetry?.durasiPompa, telemetry?.baseDurasi]);
+
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(0);
+  const prevRuleRef = useRef(telemetry?.rule);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (telemetry?.rule === "COOLDOWN" && prevRuleRef.current !== "COOLDOWN") {
+      const cooldownSecs = telemetry?.cooldown ?? 60;
+      setCooldownTimeLeft(cooldownSecs);
+    } else if (telemetry?.rule !== "COOLDOWN") {
+      setCooldownTimeLeft(0);
+    }
+
+    if (telemetry?.rule === "COOLDOWN") {
+      interval = setInterval(() => {
+        setCooldownTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    prevRuleRef.current = telemetry?.rule;
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [telemetry?.rule, telemetry?.cooldown]);
+  
   const details = getFuzzyRuleDetails(rule);
   
   const tanahStatus = getTanahStatus(telemetry?.tanah || 0, telemetry?.calBasah || 1500, telemetry?.calKering || 3500);
@@ -94,7 +158,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
               <PowerOff className="w-6 h-6 text-slate-400" />
             </div>
             <h4 className="font-bold text-sm text-text-primary">Fuzzy Logic Nonaktif</h4>
-            <p className="text-[10px] mt-1 px-4 text-center opacity-70 text-text-secondary">Mode manual aktif. AI diabaikan.</p>
+            <p className="text-[10px] mt-1 px-4 text-center opacity-70 text-text-secondary">Mode manual aktif. Sistem otomatis diabaikan.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -115,9 +179,15 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
               <p className="text-[10px] opacity-70 mb-1 flex items-center gap-1 text-text-primary">
                 Sistem Memutuskan <span className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-mono font-bold text-primary dark:text-secondary">{rule}</span> :
               </p>
-              <p className={`text-xs font-bold leading-snug ${details.warna}`}>
+              <div className={`text-xs font-bold leading-snug flex items-center gap-1.5 ${details.warna}`}>
                 "{details.kondisi}"
-              </p>
+                {rule === "COOLDOWN" && cooldownTimeLeft > 0 && (
+                  <span className="text-[10px] bg-warning/20 text-warning px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-warning/30">
+                    <Timer className="w-3 h-3 animate-pulse" />
+                    {cooldownTimeLeft}s
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Defuzzifikasi */}
@@ -125,10 +195,17 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
               <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest mb-1 text-text-secondary">Output Keputusan</p>
               <div className="grid grid-cols-2 gap-2 flex-1 min-h-0">
                 {/* Panel Pompa */}
-                <div className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-500 ${details.pompaGlow ? "bg-primary/10 dark:bg-blue-900/20 border-secondary/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]" : "bg-white/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"}`}>
+                <div className={`relative p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-500 ${details.pompaGlow ? "bg-primary/10 dark:bg-blue-900/20 border-secondary/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]" : "bg-white/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50"}`}>
                   <Droplets className={`w-4 h-4 mb-1 transition-colors ${details.pompaGlow ? "text-primary animate-pulse" : "opacity-40 text-slate-500"}`} />
                   <span className="text-[8px] font-bold uppercase tracking-wider opacity-60 text-slate-600 dark:text-slate-300">Pompa Air</span>
                   <span className={`text-[10px] font-black mt-0.5 ${details.pompaGlow ? "text-primary dark:text-secondary" : "text-text-secondary opacity-80"}`}>{details.aksiPompa}</span>
+                  
+                  {telemetry?.pompa === 1 && timeLeft > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-primary text-white dark:bg-secondary dark:text-slate-900 text-[11px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md border-2 border-white dark:border-slate-800 z-10">
+                      <Timer className="w-3 h-3 animate-pulse" />
+                      {timeLeft}s
+                    </div>
+                  )}
                 </div>
 
                 {/* Panel Lampu UV */}
@@ -151,7 +228,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
         <div className="bg-transparent border-l-4 border-primary pl-4 py-2 flex flex-col h-full pointer-events-auto relative">
           <div className="flex items-center gap-2 mb-3 opacity-80">
             <BrainCircuit className="w-4 h-4 text-primary" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">AI Logic Expert</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">Fuzzy Logic Expert</h2>
           </div>
           {fuzzyContent}
         </div>
@@ -167,7 +244,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
               <BrainCircuit className="w-5 h-5 text-primary dark:text-secondary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-200">AI EXPERT</h2>
+              <h2 className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-200">FUZZY EXPERT</h2>
               <p className="text-[9px] opacity-70">Sistem Logika Cerdas</p>
             </div>
           </div>
@@ -184,7 +261,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
           <div className="flex items-center gap-2 border-b border-white/20 pb-2 mb-3 z-10 text-white">
             <BrainCircuit className="w-5 h-5" />
-            <h2 className="text-sm font-bold uppercase tracking-wider drop-shadow-sm">Fuzzy AI Logic</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider drop-shadow-sm">Fuzzy Logic</h2>
           </div>
           <div className="flex-1 flex flex-col bg-surface rounded-xl p-3 shadow-inner relative z-10">
             {fuzzyContent}
@@ -199,7 +276,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
           <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-secondary to-transparent opacity-70"></div>
           <div className="flex items-center gap-2 mb-4">
             <BrainCircuit className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-            <h3 className="font-mono text-secondary uppercase tracking-[0.2em] text-xs drop-shadow-[0_0_2px_rgba(99,102,241,0.5)]">SYS_AI_LOGIC</h3>
+            <h3 className="font-mono text-secondary uppercase tracking-[0.2em] text-xs drop-shadow-[0_0_2px_rgba(99,102,241,0.5)]">SYS_FUZZY_LOGIC</h3>
           </div>
           <div className="flex-1 flex flex-col relative z-10 border border-primary/30 rounded-lg p-2 bg-indigo-950/30">
             {fuzzyContent}
@@ -215,7 +292,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
              <div className="bg-white border-2 border-black p-1 rounded-md shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                <BrainCircuit className="w-4 h-4 text-black" />
              </div>
-             <h3 className="font-black text-black uppercase tracking-widest text-sm">FUZZY AI</h3>
+             <h3 className="font-black text-black uppercase tracking-widest text-sm">FUZZY LOGIC</h3>
           </div>
           <div className="flex-1 flex flex-col bg-white border-4 border-black shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-lg p-2 relative">
             {fuzzyContent}
@@ -232,7 +309,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
                <BrainCircuit className="w-4 h-4" />
              </div>
              <div>
-               <h3 className="font-bold text-slate-600 dark:text-slate-300 tracking-widest text-xs uppercase">AI Logic</h3>
+               <h3 className="font-bold text-slate-600 dark:text-slate-300 tracking-widest text-xs uppercase">Fuzzy Logic</h3>
              </div>
           </div>
           <div className="flex-1 flex flex-col rounded-2xl bg-[#e0e5ec] dark:bg-slate-800 shadow-[inset_6px_6px_12px_rgba(163,177,198,0.6),inset_-6px_-6px_12px_rgba(255,255,255,0.5)] dark:shadow-[inset_6px_6px_12px_rgba(0,0,0,0.4),inset_-6px_-6px_12px_rgba(255,255,255,0.05)] border-4 border-[#e0e5ec] dark:border-slate-800 p-3 relative">
@@ -251,7 +328,7 @@ export default function AIFuzzyStatusCard({ telemetry, variant = "default" }: AI
           </div>
           <div>
             <h3 className="font-semibold text-sm tracking-wide">Fuzzy Logic Expert</h3>
-            <p className="text-[10px] opacity-70">Keputusan AI Berdasarkan Sensor</p>
+            <p className="text-[10px] opacity-70">Keputusan Otomatis Berdasarkan Sensor</p>
           </div>
         </div>
         <div className="flex-1 flex flex-col relative">

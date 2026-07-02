@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 import HistorySensorWidget from "../../components/HistorySensorWidget";
 import HistoryActionWidget from "../../components/HistoryActionWidget";
+import { mergeChartData } from "../../lib/data-utils";
 
 interface SensorLog {
   id: string;
@@ -66,11 +67,8 @@ export default function HistoryPage() {
   }, [activeDeviceId]);
 
   const sensorChartData = React.useMemo(() => {
-    return [...sensorLogs].reverse().map(log => ({
-      ...log,
-      time: new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })
-    }));
-  }, [sensorLogs]);
+    return mergeChartData(sensorLogs, actionLogs);
+  }, [sensorLogs, actionLogs]);
 
   const actionChartData = React.useMemo(() => {
     return [...actionLogs].reverse().map(log => ({

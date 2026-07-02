@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMQTTContext } from "./MQTTProvider";
 import { WidgetVariant } from "@/types";
 import { BaseWidgetProps } from "../types";
+import { mergeChartData } from "@/lib/data-utils";
 
 const SensorChart = dynamic(() => import("./HistoryCharts").then(mod => mod.SensorChart), { 
   ssr: false, 
@@ -25,6 +26,7 @@ interface HistoryCardProps extends BaseWidgetProps {
 export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
   const { config } = useMQTTContext();
   const [sensorLogs, setSensorLogs] = useState<SensorLog[]>([]);
+  const [actionLogs, setActionLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -32,10 +34,17 @@ export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
     
     const fetchRecentLogs = async () => {
       try {
-        const res = await fetch(`/api/logs/sensor?deviceId=${config.deviceId}&limit=20`);
-        const data = await res.json();
-        if (data.success) {
-          setSensorLogs(data.data);
+        const [sensorRes, actionRes] = await Promise.all([
+          fetch(`/api/logs/sensor?deviceId=${config.deviceId}&limit=20`),
+          fetch(`/api/logs/action?deviceId=${config.deviceId}&limit=20`)
+        ]);
+        const sensorData = await sensorRes.json();
+        const actionData = await actionRes.json();
+        if (sensorData.success) {
+          setSensorLogs(sensorData.data);
+        }
+        if (actionData.success) {
+          setActionLogs(actionData.data);
         }
       } catch (err) {
         console.error("Failed to fetch recent logs:", err);
@@ -48,11 +57,8 @@ export default function HistoryCard({ variant = "default" }: HistoryCardProps) {
   }, [config.deviceId]);
 
   const chartData = React.useMemo(() => {
-    return [...sensorLogs].reverse().map(log => ({
-      ...log,
-      time: new Date(log.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })
-    }));
-  }, [sensorLogs]);
+    return mergeChartData(sensorLogs, actionLogs);
+  }, [sensorLogs, actionLogs]);
 
   const renderContent = (chartContent: React.ReactNode) => {
     if (variant === "minimal") {

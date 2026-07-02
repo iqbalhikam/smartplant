@@ -1,5 +1,5 @@
-import React from "react";
-import { Cpu, Power, Lightbulb, Lock } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Cpu, Power, Lightbulb, Lock, Timer } from "lucide-react";
 import { motion } from "framer-motion";
 import { SmartPlantData, WidgetVariant } from "../types";
 import { toast } from "sonner";
@@ -16,6 +16,38 @@ const itemVariants = {
 };
 
 export default function ControlsCard({ telemetry, publishCommand, variant }: ControlsCardProps) {
+  const [timeLeft, setTimeLeft] = useState(0);
+  const prevPompaRef = useRef(telemetry.pompa);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (telemetry.pompa === 1 && prevPompaRef.current !== 1) {
+      const duration = telemetry.durasiPompa || telemetry.baseDurasi || 0;
+      setTimeLeft(Math.ceil(duration / 1000));
+    } else if (telemetry.pompa === 0) {
+      setTimeLeft(0);
+    }
+
+    if (telemetry.pompa === 1) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    prevPompaRef.current = telemetry.pompa;
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [telemetry.pompa, telemetry.durasiPompa, telemetry.baseDurasi]);
+
   const controlsContent = (
     <div className="flex-1 overflow-y-auto flex flex-col pr-1 custom-scrollbar">
       {/* Mode Toggle Switch */}
@@ -62,8 +94,20 @@ export default function ControlsCard({ telemetry, publishCommand, variant }: Con
               Pompa Air
               {telemetry.mode === "AUTO" && <Lock className="w-2.5 h-2.5 text-slate-400 dark:text-slate-500" />}
             </span>
-            <span className="text-[9px] text-slate-500">
-              {telemetry.pompa === 1 ? "Menyala" : "Mati"}
+            <span className="text-[9px] text-slate-500 flex items-center gap-1">
+              {telemetry.pompa === 1 ? (
+                <>
+                  Menyala
+                  {timeLeft > 0 && (
+                    <span className="text-primary font-bold bg-primary/10 px-1 rounded flex items-center gap-0.5">
+                      <Timer className="w-2.5 h-2.5" />
+                      {timeLeft}s
+                    </span>
+                  )}
+                </>
+              ) : (
+                "Mati"
+              )}
             </span>
           </div>
 
@@ -223,14 +267,14 @@ export default function ControlsCard({ telemetry, publishCommand, variant }: Con
       );
     }
 
-    // Default UI
+    // Default UI (Sekarang menggunakan efek Glassmorphism)
     return (
-      <div className="flex flex-col h-full min-h-0 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden p-3 hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 pointer-events-auto">
-        <div className="flex items-center gap-2 border-b border-white/50 dark:border-white/10 pb-2 mb-2 shrink-0">
-          <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20">
-            <Cpu className="w-4 h-4 text-primary dark:text-secondary" />
+      <div className="flex flex-col h-full min-h-0 bg-white/10 dark:bg-black/20 backdrop-blur-lg border border-white/20 rounded-2xl shadow-xl overflow-hidden p-3 hover:border-white/30 transition-all duration-300 pointer-events-auto text-slate-800 dark:text-white">
+        <div className="flex items-center gap-2 border-b border-white/20 pb-2 mb-2 shrink-0">
+          <div className="p-1.5 bg-white/20 dark:bg-black/30 rounded-lg border border-white/30 backdrop-blur-md">
+            <Cpu className="w-4 h-4 text-primary dark:text-secondary drop-shadow-md" />
           </div>
-          <h3 className="font-bold text-text-primary tracking-wide text-xs">Mode & Kontrol</h3>
+          <h3 className="font-bold text-slate-800 dark:text-white tracking-wide text-xs drop-shadow-sm">Mode & Kontrol</h3>
         </div>
         {controlsContent}
       </div>
